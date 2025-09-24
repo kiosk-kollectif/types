@@ -1,8 +1,6 @@
 import { Controller, Get, Res } from '@nestjs/common';
 import { AppService } from './app.service';
-import { OPENAPI_FILE } from './utils/constants';
 import express from 'express';
-import { readFileSync } from 'fs';
 
 @Controller()
 export class AppController {
@@ -15,26 +13,11 @@ export class AppController {
 
   @Get('openapi.json')
   getOpenApi(@Res() res: express.Response) {
-    res
-      .type('application/json')
-      .send(readFileSync(OPENAPI_FILE, { encoding: 'utf-8' }));
+    res.type('application/json').send(this.appService.getOpenapiContent);
   }
 
   @Get('docs')
   getDocs(@Res() res: express.Response) {
-    res.send(`<!DOCTYPE html>
-    <html>
-      <head>
-        <script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
-        <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
-      </head>
-      <body>
-        <elements-api
-          apiDescriptionUrl="/openapi.json"
-          router="hash"
-          layout="sidebar"
-        />
-      </body>
-    </html>`);
+    res.send(this.appService.getDocs);
   }
 }
