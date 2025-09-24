@@ -1,9 +1,19 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { LoginUserInfoDto } from './dto/login-user-info.dto';
+import { AuthPayload } from 'src/auth/auth.service';
 
-@ApiTags('users')
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly UsersService: UsersService) {}
@@ -41,6 +51,92 @@ export class UsersController {
       statusCode: HttpStatus.CREATED,
       message: 'User created successfully',
       data: { token },
+    };
+  }
+
+  @Post('login')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Se connecter avec un utilisateur' })
+  @ApiResponse({
+    status: 200,
+    description: 'Utilisateur connecté avec succès',
+    schema: {
+      example: {
+        statusCode: 200,
+        message: 'User logged in successfully',
+        data: { token: 'jwt_token' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Identifiants invalides',
+  })
+  @ApiResponse({
+    status: 404,
+    description: "L'utilisateur n'existe pas",
+  })
+  async login(@Body() user: LoginUserInfoDto) {
+    const token = await this.UsersService.userLogin(user);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'User logged in successfully',
+      data: { token },
+    };
+  }
+
+  @Get(':id')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Récupérer un utilisateur par son ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Utilisateur récupéré avec succès',
+    schema: {
+      example: {
+        statusCode: 200,
+        message: 'User fetched successfully',
+        data: null,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: "L'utilisateur n'existe pas",
+  })
+  async getUserById(@Param('id') id: string) {
+    const user = await this.UsersService.getUserById(id);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'User fetched successfully',
+      data: user as AuthPayload,
+    };
+  }
+
+  @Post(':id/send-verification-code')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Envoyer un code de vérification' })
+  @ApiResponse({
+    status: 200,
+    description: 'Code de vérification envoyé avec succès',
+    schema: {
+      example: {
+        statusCode: 200,
+        message: 'Verification code sent successfully',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: "L'utilisateur n'existe pas",
+  })
+  async sendVerificationCode(@Param('id') id: string) {
+    await this.UsersService.sendConfirmationMail(id);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Verification code sent successfully',
     };
   }
 }

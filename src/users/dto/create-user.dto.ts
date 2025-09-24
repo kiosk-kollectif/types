@@ -19,10 +19,10 @@ export class CreateUserDto {
   })
   readonly password: string;
 
-  @ApiProperty({
-    example: 'admin',
-    description: "role de l'utilisateur",
-    required: false,
-  })
-  readonly role?: string;
+  // @ApiProperty({
+  //   example: 'admin',
+  //   description: "role de l'utilisateur",
+  //   required: false,
+  // })
+  // readonly role?: string;
 }

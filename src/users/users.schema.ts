@@ -35,8 +35,8 @@ export class User {
   @Prop({ type: UserProfilSchema })
   profil: UserProfil;
 
-  @Prop({ required: true, default: 0 })
-  role: number;
+  @Prop({ required: true, default: 'user' })
+  role: string;
 
   @Prop({ required: true, default: Date.now() })
   createdAt: Date;
