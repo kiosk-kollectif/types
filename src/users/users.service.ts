@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './users.schema';
@@ -12,13 +13,28 @@ import { hashPassword, verifyPasswword } from 'src/utils/passwordHashManager';
 import { AuthPayload, AuthService } from 'src/auth/auth.service';
 import { LoginUserInfoDto } from './dto/login-user-info.dto';
 import { EditUserProfilDto } from './dto/edit-user-profil.dto';
+import {
+  ResetPasswordRequest,
+  ResetPasswordRequestDocument,
+} from './reset-password-request.schema';
+import { randomBytes } from 'crypto';
+import { sendPasswordResetMail } from 'src/utils/mailers';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(ResetPasswordRequest.name)
+    private readonly resetPasswordReqModel: Model<ResetPasswordRequestDocument>,
     private readonly authService: AuthService,
   ) {}
+
+  private async getLastPasswordResetRequest(id: string) {
+    return await this.resetPasswordReqModel
+      .findOne({ userId: id })
+      .sort({ createdAt: -1 });
+  }
+
   async getUsers(): Promise<string[]> {
     return new Promise((res) => {
       res(['user1', 'user2']);
@@ -96,5 +112,29 @@ export class UsersService {
     await user.save();
 
     return this.authService.signToken(user as AuthPayload);
+  }
+
+  async requestPasswordReset(id: string) {
+    const user = await this.getUserById(id);
+
+    const lastRequest = await this.getLastPasswordResetRequest(id);
+
+    if (lastRequest) {
+      if (!lastRequest.isExpired) {
+        throw new UnauthorizedException(
+          'Please wait for the previous request to expire',
+        );
+      }
+
+      lastRequest.expireAt = new Date(Date.now());
+      await lastRequest.save();
+    }
+
+    const newRequest = await this.resetPasswordReqModel.create({
+      userId: id,
+      code: randomBytes(32).toString('hex'),
+    });
+
+    await sendPasswordResetMail(user.email, newRequest.code);
   }
 }

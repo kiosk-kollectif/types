@@ -138,4 +138,28 @@ export class UsersController {
       data: { token },
     };
   }
+
+  @Post(':id/request-password-reset')
+  @HttpCode(202)
+  @ApiOperation({ summary: 'Demander la réinitialisation du mot de passe' })
+  @ApiResponse({
+    status: 202,
+    description: 'Demande de réinitialisation du mot de passe acceptée',
+  })
+  @ApiResponse({
+    status: 404,
+    description: "L'utilisateur n'existe pas ou ",
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Demande déjà existante, veuillez patienter',
+  })
+  async requestPasswordReset(@Param('id') id: string) {
+    await this.UsersService.requestPasswordReset(id);
+
+    return {
+      statusCode: HttpStatus.ACCEPTED,
+      message: 'Password reset requested successfully',
+    };
+  }
 }

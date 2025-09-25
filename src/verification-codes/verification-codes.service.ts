@@ -6,7 +6,7 @@ import {
 } from './verification-codes.schema';
 import { Model } from 'mongoose';
 import { UsersService } from 'src/users/users.service';
-import { sendEmail } from 'src/utils/mailers';
+import { sendAccountConfirmationMail } from 'src/utils/mailers';
 
 @Injectable()
 export class VerificationCodesService {
@@ -40,7 +40,7 @@ export class VerificationCodesService {
       code: Math.floor(100000 + Math.random() * 900000),
     });
 
-    await sendEmail(user.email, VerificationCode.code);
+    await sendAccountConfirmationMail(user.email, VerificationCode.code);
   }
 
   async confirmVerificationCode(id: string, code: number) {
