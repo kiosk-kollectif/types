@@ -113,30 +113,4 @@ export class UsersController {
       data: user as AuthPayload,
     };
   }
-
-  @Post(':id/send-verification-code')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Envoyer un code de vérification' })
-  @ApiResponse({
-    status: 200,
-    description: 'Code de vérification envoyé avec succès',
-    schema: {
-      example: {
-        statusCode: 200,
-        message: 'Verification code sent successfully',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: "L'utilisateur n'existe pas",
-  })
-  async sendVerificationCode(@Param('id') id: string) {
-    await this.UsersService.sendConfirmationMail(id);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Verification code sent successfully',
-    };
-  }
 }

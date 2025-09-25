@@ -38,6 +38,9 @@ export class User {
   @Prop({ required: true, default: 'user' })
   role: string;
 
+  @Prop({ required: true, default: false })
+  verified: boolean;
+
   @Prop({ required: true, default: Date.now() })
   createdAt: Date;
 

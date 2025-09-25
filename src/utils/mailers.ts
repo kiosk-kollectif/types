@@ -13,7 +13,7 @@ export const sendEmail = async (
     secure: true,
     auth: {
       user: 'faouzanekouko@gmail.com',
-      pass: 'dmry jkhb nnwr ormj ',
+      pass: 'dmry jkhb nnwr ormj',
     },
   });
 

@@ -11,7 +11,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { hashPassword, verifyPasswword } from 'src/utils/passwordHashManager';
 import { AuthPayload, AuthService } from 'src/auth/auth.service';
 import { LoginUserInfoDto } from './dto/login-user-info.dto';
-import { sendEmail } from 'src/utils/mailers';
 
 @Injectable()
 export class UsersService {
@@ -78,10 +77,14 @@ export class UsersService {
     return user;
   }
 
-  async sendConfirmationMail(id: string): Promise<void> {
+  async activeUserVerification(id: string) {
     const user = await this.getUserById(id);
 
-    //TODO Cheick if user Is ALready Verifired
-    await sendEmail(user.email, 343849);
+    if (user.verified) {
+      throw new BadRequestException('User already verified');
+    }
+
+    user.verified = true;
+    await user.save();
   }
 }
