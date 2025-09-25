@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { VerificationCodesModule } from './verification-codes/verification-codes.module';
+import { WarehousesModule } from './warehouses/warehouses.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { VerificationCodesModule } from './verification-codes/verification-codes
     UsersModule,
     AuthModule,
     VerificationCodesModule,
+    WarehousesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

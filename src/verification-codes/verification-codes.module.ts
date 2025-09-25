@@ -7,6 +7,7 @@ import {
   VerificationCode,
   VerificationCodesSchema,
 } from './verification-codes.schema';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import {
     MongooseModule.forFeature([
       { name: VerificationCode.name, schema: VerificationCodesSchema },
     ]),
+    AuthModule,
   ],
   controllers: [VerificationCodesController],
   providers: [VerificationCodesService],

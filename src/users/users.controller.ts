@@ -6,13 +6,15 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginUserInfoDto } from './dto/login-user-info.dto';
 import { AuthPayload } from 'src/auth/auth.service';
 import { EditUserProfilDto } from './dto/edit-user-profil.dto';
+import { OwnerRequestGuard } from 'src/auth/owner.guard';
 
 @ApiTags('Users')
 @Controller('users')
@@ -115,7 +117,14 @@ export class UsersController {
     };
   }
 
+  @UseGuards(OwnerRequestGuard)
   @Post(':id/update-profil')
+  @ApiHeader({
+    name: 'Authorization',
+    required: true,
+    description: 'Token JWT',
+    example: 'Bearer <token>',
+  })
   @HttpCode(202)
   @ApiOperation({ summary: "Mettre à jour le profil d'un utilisateur" })
   @ApiResponse({
@@ -139,6 +148,7 @@ export class UsersController {
     };
   }
 
+  @UseGuards(OwnerRequestGuard)
   @Post(':id/request-password-reset')
   @HttpCode(202)
   @ApiOperation({ summary: 'Demander la réinitialisation du mot de passe' })

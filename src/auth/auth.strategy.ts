@@ -12,9 +12,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(...args: any[]): unknown {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const [payload] = args;
+  validate(payload: any): unknown {
     return payload;
   }
 }

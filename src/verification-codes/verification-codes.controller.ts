@@ -5,17 +5,30 @@ import {
   HttpStatus,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiHeader,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { VerificationCodesService } from './verification-codes.service';
+import { OwnerRequestGuard } from 'src/auth/owner.guard';
 
-@ApiTags('Verification Codes')
+@ApiTags('Codes et Verification')
 @Controller('verification-codes')
 export class VerificationCodesController {
   constructor(private readonly verifCodeServ: VerificationCodesService) {}
 
+  @UseGuards(OwnerRequestGuard)
   @Post('send')
   @HttpCode(200)
+  @ApiHeader({
+    name: 'Authorization',
+    description: "Token d'authentification",
+  })
   @ApiOperation({ summary: 'Envoyer un code de vérification' })
   @ApiQuery({ name: 'id', required: true, description: "ID de l'utilisateur" })
   @ApiResponse({
@@ -48,6 +61,8 @@ export class VerificationCodesController {
     };
   }
 
+  @UseGuards(OwnerRequestGuard)
+  @ApiHeader({ name: 'Authorization', description: "Token d'authentification" })
   @Post('verify')
   @HttpCode(200)
   @ApiOperation({ summary: 'Vérifier un code de vérification' })
