@@ -51,7 +51,12 @@ export class VerificationCodesController {
   @Post('verify')
   @HttpCode(200)
   @ApiOperation({ summary: 'Vérifier un code de vérification' })
-  @ApiQuery({ name: 'id', required: true, description: "ID de l'utilisateur" })
+  @ApiQuery({
+    name: 'id',
+    required: true,
+    description: "ID de l'utilisateur",
+    example: '68d46a5a0f81b0ed1467915d',
+  })
   @ApiQuery({
     name: 'code',
     required: true,

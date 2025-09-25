@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginUserInfoDto } from './dto/login-user-info.dto';
 import { AuthPayload } from 'src/auth/auth.service';
+import { EditUserProfilDto } from './dto/edit-user-profil.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -111,6 +112,30 @@ export class UsersController {
       statusCode: HttpStatus.OK,
       message: 'User fetched successfully',
       data: user as AuthPayload,
+    };
+  }
+
+  @Post(':id/update-profil')
+  @HttpCode(202)
+  @ApiOperation({ summary: "Mettre à jour le profil d'un utilisateur" })
+  @ApiResponse({
+    status: 202,
+    description: 'Profil utilisateur mis à jour avec succès',
+  })
+  @ApiResponse({
+    status: 404,
+    description: "L'utilisateur n'existe pas",
+  })
+  async updateUserProfil(
+    @Param('id') id: string,
+    @Body() userProfil: EditUserProfilDto,
+  ) {
+    const token = await this.UsersService.editUserProfile(id, userProfil);
+
+    return {
+      statusCode: HttpStatus.ACCEPTED,
+      message: 'User profile updated successfully',
+      data: { token },
     };
   }
 }

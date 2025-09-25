@@ -11,6 +11,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { hashPassword, verifyPasswword } from 'src/utils/passwordHashManager';
 import { AuthPayload, AuthService } from 'src/auth/auth.service';
 import { LoginUserInfoDto } from './dto/login-user-info.dto';
+import { EditUserProfilDto } from './dto/edit-user-profil.dto';
 
 @Injectable()
 export class UsersService {
@@ -86,5 +87,14 @@ export class UsersService {
 
     user.verified = true;
     await user.save();
+  }
+
+  async editUserProfile(id: string, userProfil: EditUserProfilDto) {
+    const user = await this.getUserById(id);
+
+    user.profil = { ...user.profil, ...userProfil };
+    await user.save();
+
+    return this.authService.signToken(user as AuthPayload);
   }
 }
