@@ -1,0 +1,59 @@
+import { ConflictException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import {
+  ToolsCategories,
+  ToolsCategoriesDocument,
+} from './tools-categories.schema';
+import { Model } from 'mongoose';
+import { CreateCategoryDto } from './dto/create-category.dto';
+
+@Injectable()
+export class ToolsCategoriesService {
+  constructor(
+    @InjectModel(ToolsCategories.name)
+    private readonly toolsCategoriesModel: Model<ToolsCategoriesDocument>,
+  ) {}
+
+  async getAllCategories() {
+    return await this.toolsCategoriesModel.find();
+  }
+
+  async getCategoryById(id: string) {
+    const category = await this.toolsCategoriesModel.findById(id);
+    if (!category) {
+      throw new ConflictException('This category does not exist');
+    }
+    return category;
+  }
+
+  async createCategory(categoryDto: CreateCategoryDto) {
+    const newCategory = {
+      ...categoryDto,
+      name: categoryDto.name.toLowerCase(),
+    };
+
+    const categories = await this.getAllCategories();
+    const exists = categories.find((cat) => cat.name === newCategory.name);
+    if (exists) {
+      throw new ConflictException('This categorie exists already');
+    }
+    const created = await this.toolsCategoriesModel.create(newCategory);
+
+    return created;
+  }
+
+  async deleteCategory(id: string) {
+    const exist = await this.getCategoryById(id);
+    await this.toolsCategoriesModel.deleteOne({ _id: exist._id });
+  }
+
+  async updateCategory(id: string, categoryDto: Partial<CreateCategoryDto>) {
+    const exists = await this.getCategoryById(id);
+
+    if (categoryDto?.name) exists.name = categoryDto.name.toLowerCase();
+    if (categoryDto?.description) exists.description = categoryDto.description;
+
+    await exists.save();
+    return exists;
+  }
+}

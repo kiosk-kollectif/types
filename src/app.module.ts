@@ -7,6 +7,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { VerificationCodesModule } from './verification-codes/verification-codes.module';
 import { WarehousesModule } from './warehouses/warehouses.module';
+import { AdminsModule } from './admins/admins.module';
+import { ToolsCategoriesModule } from './tools-categories/tools-categories.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { WarehousesModule } from './warehouses/warehouses.module';
     AuthModule,
     VerificationCodesModule,
     WarehousesModule,
+    AdminsModule,
+    ToolsCategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
