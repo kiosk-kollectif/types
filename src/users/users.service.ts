@@ -9,7 +9,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './users.schema';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
-import { hashPassword, verifyPasswword } from 'src/utils/passwordHashManager';
+import {
+  hashPassword,
+  verifyPasswword,
+} from 'src/common/utils/passwordHashManager';
 import { AuthPayload, AuthService } from 'src/auth/auth.service';
 import { LoginUserInfoDto } from './dto/login-user-info.dto';
 import { EditUserProfilDto } from './dto/edit-user-profil.dto';
@@ -18,7 +21,8 @@ import {
   ResetPasswordRequestDocument,
 } from './reset-password-request.schema';
 import { randomBytes } from 'crypto';
-import { sendPasswordResetMail } from 'src/utils/mailers';
+import { sendPasswordResetMail } from 'src/common/utils/mailers';
+import { EditUserInfoDto } from './dto/edit-user-info.dto';
 
 @Injectable()
 export class UsersService {
@@ -136,5 +140,19 @@ export class UsersService {
     });
 
     await sendPasswordResetMail(user.email, newRequest.code);
+  }
+
+  async editUserInfo(id: string, userInfo: EditUserInfoDto) {
+    const user = await this.getUserById(id);
+
+    if (userInfo.password) user.passwordHash = hashPassword(userInfo.password);
+    if (userInfo.firstname) user.firstname = userInfo.firstname;
+    if (userInfo.lastname) user.lastname = userInfo.lastname;
+    if (userInfo.email) user.email = userInfo.email;
+    if (userInfo.role) user.role = userInfo.role;
+
+    await user.save();
+
+    return this.authService.signToken(user as AuthPayload);
   }
 }

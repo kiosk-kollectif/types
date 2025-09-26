@@ -10,11 +10,20 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiAcceptedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { LoginUserInfoDto } from './dto/login-user-info.dto';
 import { AuthPayload } from 'src/auth/auth.service';
 import { EditUserProfilDto } from './dto/edit-user-profil.dto';
-import { OwnerRequestGuard } from 'src/auth/owner.guard';
+import { OwnerRequestGuard } from 'src/auth/owner-request.guard';
+import { EditUserInfoDto } from './dto/edit-user-info.dto';
+import { ApiUseBearer } from 'src/common/decorator/request-config.decorator';
 
 @ApiTags('Users')
 @Controller('users')
@@ -118,13 +127,30 @@ export class UsersController {
   }
 
   @UseGuards(OwnerRequestGuard)
-  @Post(':id/update-profil')
-  @ApiHeader({
-    name: 'Authorization',
-    required: true,
-    description: 'Token JWT',
-    example: 'Bearer <token>',
+  @Post(':id/edit')
+  @ApiUseBearer()
+  @HttpCode(202)
+  @ApiOperation({ summary: "Mettre à jour les informations d'un utilisateur" })
+  @ApiAcceptedResponse({
+    description: 'Les informations ont ete mises a jours',
   })
+  @ApiNotFoundResponse({ description: "L'utilisateur n'existe pas" })
+  @ApiForbiddenResponse({
+    description: "Vous n'êtes pas autorisé à effectuer cette action",
+  })
+  async editUserInfo(@Param('id') id: string, @Body() user: EditUserInfoDto) {
+    const token = await this.UsersService.editUserInfo(id, user);
+
+    return {
+      statusCode: HttpStatus.ACCEPTED,
+      message: 'User info updated successfully',
+      data: { token },
+    };
+  }
+
+  @UseGuards(OwnerRequestGuard)
+  @Post(':id/update-profil')
+  @ApiUseBearer()
   @HttpCode(202)
   @ApiOperation({ summary: "Mettre à jour le profil d'un utilisateur" })
   @ApiResponse({
@@ -151,6 +177,7 @@ export class UsersController {
   @UseGuards(OwnerRequestGuard)
   @Post(':id/request-password-reset')
   @HttpCode(202)
+  @ApiUseBearer()
   @ApiOperation({ summary: 'Demander la réinitialisation du mot de passe' })
   @ApiResponse({
     status: 202,

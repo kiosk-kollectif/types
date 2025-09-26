@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { writeFileSync } from 'fs';
-import { OPENAPI_FILE } from './utils/constants';
+import { OPENAPI_FILE } from './common/utils/constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { readFileSync } from 'fs';
-import { OPENAPI_FILE } from './utils/constants';
+import { OPENAPI_FILE } from './common/utils/constants';
 
 @Injectable()
 export class AppService {

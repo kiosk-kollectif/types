@@ -2,12 +2,15 @@ import { Body, Controller, Get, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AddWarehouseDto } from './dto/add-warehouse.dto';
 import { WarehousesService } from './warehouses.service';
+import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
+import { Role } from 'src/common/enums/role.enum';
 
 @ApiTags('Conteneurs')
 @Controller('warehouses')
 export class WarehousesController {
   constructor(private readonly wareHouseServ: WarehousesService) {}
 
+  @PermissionLevel([Role.ADMIN])
   @Post('add')
   @ApiOperation({ summary: 'Ajouter un conteneur' })
   @ApiResponse({ status: 200, description: 'Conteneur ajouté avec succès' })
@@ -25,6 +28,7 @@ export class WarehousesController {
     };
   }
 
+  @PermissionLevel([Role.ADMIN, Role.MANAGER])
   @Get(':id')
   @ApiOperation({ summary: 'Afficher un conteneur' })
   @ApiResponse({ status: 200, description: 'Conteneur affiché avec succès' })
@@ -42,12 +46,14 @@ export class WarehousesController {
     };
   }
 
+  @PermissionLevel([Role.ADMIN])
   @Get(':id/delete')
   @ApiOperation({ summary: 'Supprimer un conteneur' })
   deleteWareHouse() {
     //TODO: Implementer deleteWareHouse
   }
 
+  @PermissionLevel([Role.ADMIN])
   @Post(':id/update')
   @ApiOperation({ summary: 'Modifier un conteneur' })
   @ApiResponse({ status: 200, description: 'Conteneur modifié avec succès' })

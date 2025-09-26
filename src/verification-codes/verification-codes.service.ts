@@ -6,7 +6,7 @@ import {
 } from './verification-codes.schema';
 import { Model } from 'mongoose';
 import { UsersService } from 'src/users/users.service';
-import { sendAccountConfirmationMail } from 'src/utils/mailers';
+import { sendAccountConfirmationMail } from 'src/common/utils/mailers';
 
 @Injectable()
 export class VerificationCodesService {

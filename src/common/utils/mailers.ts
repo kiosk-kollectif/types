@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import * as nodemailer from 'nodemailer';
 
 export const sendAccountConfirmationMail = async (
@@ -8,12 +5,12 @@ export const sendAccountConfirmationMail = async (
   code: number,
 ): Promise<boolean> => {
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
     secure: true,
     auth: {
-      user: 'faouzanekouko@gmail.com',
-      pass: 'dmry jkhb nnwr ormj',
+      user: process.env.SMTP_HOST,
+      pass: process.env.STMP_PASSWORD,
     },
   });
 
@@ -37,12 +34,12 @@ export const sendAccountConfirmationMail = async (
 
 export const sendPasswordResetMail = async (email: string, code: string) => {
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
     secure: true,
     auth: {
-      user: 'faouzanekouko@gmail.com',
-      pass: 'dmry jkhb nnwr ormj',
+      user: process.env.SMTP_HOST,
+      pass: process.env.STMP_PASSWORD,
     },
   });
 
