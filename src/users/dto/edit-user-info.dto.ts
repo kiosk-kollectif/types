@@ -22,5 +22,5 @@ export class EditUserInfoDto {
     description: "role de l'utilisateur",
     enum: Role,
   })
-  readonly role?: string;
+  readonly role?: Role;
 }

@@ -22,11 +22,11 @@ export class PermissionLevelGuard implements CanActivate {
     if (!permissionLevel) return true;
 
     const req: Request = context.switchToHttp().getRequest();
-    const role = this.getPermissionLevel(req);
+    const playload = this.getPermissionLevel(req);
 
-    if (!role) return false;
-
-    return permissionLevel.includes(role);
+    if (!playload?.role) return false;
+    req.user = playload;
+    return permissionLevel.includes(playload.role);
   }
 
   private getPermissionLevel(req: Request) {
@@ -36,6 +36,6 @@ export class PermissionLevelGuard implements CanActivate {
 
     const playload = this.authService.verifyToken(token);
     if (!playload) return null;
-    return playload.role;
+    return playload;
   }
 }

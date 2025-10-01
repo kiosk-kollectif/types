@@ -37,7 +37,7 @@ export class User {
   profil: UserProfil;
 
   @Prop({ required: true, default: Role.USER, enum: Role })
-  role: string;
+  role: Role;
 
   @Prop({ required: true, default: false })
   verified: boolean;

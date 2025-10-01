@@ -9,6 +9,8 @@ import { VerificationCodesModule } from './verification-codes/verification-codes
 import { WarehousesModule } from './warehouses/warehouses.module';
 import { AdminsModule } from './admins/admins.module';
 import { ToolsCategoriesModule } from './tools-categories/tools-categories.module';
+import { ToolsModule } from './tools/tools.module';
+import { ApplicantModule } from './applicant/applicant.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { ToolsCategoriesModule } from './tools-categories/tools-categories.modul
     WarehousesModule,
     AdminsModule,
     ToolsCategoriesModule,
+    ToolsModule,
+    ApplicantModule,
   ],
   controllers: [AppController],
   providers: [AppService],

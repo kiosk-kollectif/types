@@ -10,8 +10,8 @@ export const PermissionLevel = (levels: string[]) => {
     UseGuards(PermissionLevelGuard),
     ApiHeader({
       name: 'Authorization',
-      description: "Token JWT d'une certaine categorie (Voir Allowed Value)",
-      enum: levels,
+      description:
+        'Token JWT des personnes autorisées (' + levels.join(' ,') + ')',
     }),
     ApiForbiddenResponse({
       description: 'Non autorisé',
