@@ -7,6 +7,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { OwnerRequestGuard } from './owner-request.guard';
 import { PermissionLevelGuard } from './permission-level.guard';
 import { JWT_TOKEN_EXPIRATION } from 'src/common/utils/constants';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from 'src/users/users.schema';
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { JWT_TOKEN_EXPIRATION } from 'src/common/utils/constants';
         };
       },
     }),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   providers: [
     AuthService,
@@ -28,6 +31,6 @@ import { JWT_TOKEN_EXPIRATION } from 'src/common/utils/constants';
     OwnerRequestGuard,
     PermissionLevelGuard,
   ],
-  exports: [AuthService],
+  exports: [AuthService, MongooseModule],
 })
 export class AuthModule {}

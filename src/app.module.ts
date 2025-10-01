@@ -10,7 +10,7 @@ import { WarehousesModule } from './warehouses/warehouses.module';
 import { AdminsModule } from './admins/admins.module';
 import { ToolsCategoriesModule } from './tools-categories/tools-categories.module';
 import { ToolsModule } from './tools/tools.module';
-import { ApplicantModule } from './applicant/applicant.module';
+import { ApplicantsModule } from './applicants/applicants.module';
 
 @Module({
   imports: [
@@ -23,7 +23,7 @@ import { ApplicantModule } from './applicant/applicant.module';
     AdminsModule,
     ToolsCategoriesModule,
     ToolsModule,
-    ApplicantModule,
+    ApplicantsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
