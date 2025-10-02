@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Role } from 'src/common/enums/role.enum';
+// import { Role } from 'src/common/enums/role.enum';
 
 export class EditUserInfoDto {
   @ApiProperty({ required: false, description: "prenom de l'utilisateur" })
@@ -17,10 +17,10 @@ export class EditUserInfoDto {
   })
   readonly password?: string;
 
-  @ApiProperty({
-    required: false,
-    description: "role de l'utilisateur",
-    enum: Role,
-  })
-  readonly role?: Role;
+  // @ApiProperty({
+  //   required: false,
+  //   description: "role de l'utilisateur",
+  //   enum: Role,
+  // })
+  // readonly role?: Role;
 }

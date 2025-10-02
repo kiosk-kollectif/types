@@ -23,12 +23,12 @@ export class PermissionLevelGuard implements CanActivate {
     if (!permissionLevel) return true;
 
     const req: Request = context.switchToHttp().getRequest();
-    const playload = this.getPermissionLevel(req);
-
-    if (!playload?.role) return false;
 
     let existsUser: UserDocument;
     try {
+      const playload = this.getPermissionLevel(req);
+
+      if (!playload?.role) return false;
       const user = await this.userModel.findById(playload._id);
       if (!user) return false;
       existsUser = user;
@@ -38,7 +38,7 @@ export class PermissionLevelGuard implements CanActivate {
     }
 
     req.user = existsUser;
-    console.log(existsUser);
+    // console.log(existsUser);
     return permissionLevel.includes(existsUser.role);
   }
 

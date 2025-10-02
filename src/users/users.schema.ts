@@ -7,14 +7,17 @@ export type UserProfilDocument = UserProfil & Document;
 
 @Schema()
 export class UserProfil {
-  @Prop()
-  address: string;
+  @Prop({ default: undefined })
+  adress?: string;
 
-  @Prop()
-  phone: string;
+  @Prop({ default: undefined })
+  phone?: string;
 
-  @Prop()
-  picture: string;
+  @Prop({ default: undefined })
+  picture?: string;
+
+  @Prop({ default: undefined })
+  thumbnail?: string;
 }
 
 export const UserProfilSchema = SchemaFactory.createForClass(UserProfil);
@@ -33,7 +36,7 @@ export class User {
   @Prop({ required: true })
   passwordHash: string;
 
-  @Prop({ type: UserProfilSchema })
+  @Prop({ type: UserProfilSchema, default: () => new UserProfil() })
   profil: UserProfil;
 
   @Prop({ required: true, default: Role.USER, enum: Role })

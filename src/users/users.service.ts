@@ -23,6 +23,8 @@ import {
 import { randomBytes } from 'crypto';
 import { sendPasswordResetMail } from 'src/common/utils/mailers';
 import { EditUserInfoDto } from './dto/edit-user-info.dto';
+import sharp from 'sharp';
+import { uploadFile } from 'src/common/utils/cloudinary';
 
 @Injectable()
 export class UsersService {
@@ -109,19 +111,52 @@ export class UsersService {
     await user.save();
   }
 
-  async editUserProfile(id: string, userProfil: EditUserProfilDto) {
-    const user = await this.getUserById(id);
+  async editUserProfile(
+    user: UserDocument,
+    userProfil: EditUserProfilDto,
+    picture?: Express.Multer.File,
+  ) {
+    if (user.profil)
+      user.profil = {
+        adress: undefined,
+        phone: undefined,
+        picture: undefined,
+        thumbnail: undefined,
+      };
 
-    user.profil = { ...user.profil, ...userProfil };
+    if (picture) {
+      const thumbBuffer = await sharp(picture.buffer)
+        .resize({ width: 200 })
+        .jpeg({ quality: 50 })
+        .toBuffer();
+
+      const thumburl = await uploadFile(
+        {
+          buffer: thumbBuffer,
+        } as Express.Multer.File,
+        'thumbnail',
+      );
+
+      const profileUrl = await uploadFile(picture, 'users_profils');
+
+      user.profil.picture = profileUrl;
+      user.profil.thumbnail = thumburl;
+    }
+
+    if (userProfil.adress) user.profil.adress = userProfil.adress;
+
+    //TODO: Amelioerer la logique de verification pour le numero de telephone
+    if (userProfil.phone) user.profil.phone = userProfil.phone;
+
     await user.save();
 
     return this.authService.signToken(user as AuthPayload);
   }
 
-  async requestPasswordReset(id: string) {
-    const user = await this.getUserById(id);
-
-    const lastRequest = await this.getLastPasswordResetRequest(id);
+  async requestPasswordReset(user: UserDocument) {
+    const lastRequest = await this.getLastPasswordResetRequest(
+      user._id as string,
+    );
 
     if (lastRequest) {
       if (!lastRequest.isExpired) {
@@ -135,21 +170,27 @@ export class UsersService {
     }
 
     const newRequest = await this.resetPasswordReqModel.create({
-      userId: id,
+      userId: user._id,
       code: randomBytes(32).toString('hex'),
     });
 
     await sendPasswordResetMail(user.email, newRequest.code);
   }
 
-  async editUserInfo(id: string, userInfo: EditUserInfoDto) {
-    const user = await this.getUserById(id);
+  async editUserInfo(user: UserDocument, userInfo: EditUserInfoDto) {
+    // Hasher le mots de passe
+    if (userInfo.password) {
+      user.passwordHash = hashPassword(userInfo['password']);
+    }
 
-    if (userInfo.password) user.passwordHash = hashPassword(userInfo.password);
+    //Appliquer des verifications sur l'email
+    // if (userInfo.email && userInfo.email !== user.email) {
+    //   user.email = userInfo.email;
+    //   user.verified = false;
+    // }
+
     if (userInfo.firstname) user.firstname = userInfo.firstname;
     if (userInfo.lastname) user.lastname = userInfo.lastname;
-    if (userInfo.email) user.email = userInfo.email;
-    if (userInfo.role) user.role = userInfo.role;
 
     await user.save();
 

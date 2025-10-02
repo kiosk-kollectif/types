@@ -6,7 +6,8 @@ import {
   HttpStatus,
   Param,
   Post,
-  UseGuards,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,9 +22,13 @@ import {
 import { LoginUserInfoDto } from './dto/login-user-info.dto';
 import { AuthPayload } from 'src/auth/auth.service';
 import { EditUserProfilDto } from './dto/edit-user-profil.dto';
-import { OwnerRequestGuard } from 'src/auth/owner-request.guard';
 import { EditUserInfoDto } from './dto/edit-user-info.dto';
 import { ApiUseBearer } from 'src/common/decorator/request-config.decorator';
+import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
+import { Role } from 'src/common/enums/role.enum';
+import { User } from './users.decorator';
+import * as usersSchema from './users.schema';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Users')
 @Controller('users')
@@ -126,10 +131,9 @@ export class UsersController {
     };
   }
 
-  @UseGuards(OwnerRequestGuard)
-  @Post(':id/edit')
-  @ApiUseBearer()
-  @HttpCode(202)
+  @PermissionLevel([Role.ADMIN, Role.APPLICANT, Role.MANAGER, Role.USER])
+  @Post('me/edit')
+  @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: "Mettre à jour les informations d'un utilisateur" })
   @ApiAcceptedResponse({
     description: 'Les informations ont ete mises a jours',
@@ -138,8 +142,11 @@ export class UsersController {
   @ApiForbiddenResponse({
     description: "Vous n'êtes pas autorisé à effectuer cette action",
   })
-  async editUserInfo(@Param('id') id: string, @Body() user: EditUserInfoDto) {
-    const token = await this.UsersService.editUserInfo(id, user);
+  async editUserInfo(
+    @User() user: usersSchema.UserDocument,
+    @Body() userInfo: EditUserInfoDto,
+  ) {
+    const token = await this.UsersService.editUserInfo(user, userInfo);
 
     return {
       statusCode: HttpStatus.ACCEPTED,
@@ -148,10 +155,10 @@ export class UsersController {
     };
   }
 
-  @UseGuards(OwnerRequestGuard)
-  @Post(':id/update-profil')
-  @ApiUseBearer()
+  @PermissionLevel([Role.ADMIN, Role.APPLICANT, Role.MANAGER, Role.USER])
+  @Post('me/update-profil')
   @HttpCode(202)
+  @UseInterceptors(FileInterceptor('picture'))
   @ApiOperation({ summary: "Mettre à jour le profil d'un utilisateur" })
   @ApiResponse({
     status: 202,
@@ -162,10 +169,15 @@ export class UsersController {
     description: "L'utilisateur n'existe pas",
   })
   async updateUserProfil(
-    @Param('id') id: string,
+    @User() user: usersSchema.UserDocument,
     @Body() userProfil: EditUserProfilDto,
+    @UploadedFile() picture?: Express.Multer.File,
   ) {
-    const token = await this.UsersService.editUserProfile(id, userProfil);
+    const token = await this.UsersService.editUserProfile(
+      user,
+      userProfil,
+      picture,
+    );
 
     return {
       statusCode: HttpStatus.ACCEPTED,
@@ -174,8 +186,8 @@ export class UsersController {
     };
   }
 
-  @UseGuards(OwnerRequestGuard)
-  @Post(':id/request-password-reset')
+  @PermissionLevel([Role.ADMIN, Role.APPLICANT, Role.MANAGER, Role.USER])
+  @Post('me/request-password-reset')
   @HttpCode(202)
   @ApiUseBearer()
   @ApiOperation({ summary: 'Demander la réinitialisation du mot de passe' })
@@ -191,8 +203,8 @@ export class UsersController {
     status: 401,
     description: 'Demande déjà existante, veuillez patienter',
   })
-  async requestPasswordReset(@Param('id') id: string) {
-    await this.UsersService.requestPasswordReset(id);
+  async requestPasswordReset(@User() user: usersSchema.UserDocument) {
+    await this.UsersService.requestPasswordReset(user);
 
     return {
       statusCode: HttpStatus.ACCEPTED,
