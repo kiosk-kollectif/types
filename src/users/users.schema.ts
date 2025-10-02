@@ -36,7 +36,7 @@ export class User {
   @Prop({ required: true })
   passwordHash: string;
 
-  @Prop({ type: UserProfilSchema, default: () => new UserProfil() })
+  @Prop({ type: UserProfilSchema })
   profil: UserProfil;
 
   @Prop({ required: true, default: Role.USER, enum: Role })

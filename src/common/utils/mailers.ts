@@ -9,8 +9,8 @@ export const sendAccountConfirmationMail = async (
     port: Number(process.env.SMTP_PORT),
     secure: true,
     auth: {
-      user: process.env.SMTP_HOST,
-      pass: process.env.STMP_PASSWORD,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
     },
   });
 
@@ -38,8 +38,8 @@ export const sendPasswordResetMail = async (email: string, code: string) => {
     port: Number(process.env.SMTP_PORT),
     secure: true,
     auth: {
-      user: process.env.SMTP_HOST,
-      pass: process.env.STMP_PASSWORD,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
     },
   });
 

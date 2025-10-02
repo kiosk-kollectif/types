@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type ResetPasswordRequestDocument = ResetPasswordRequest & Document;
-@Schema()
+@Schema({ collection: 'reset-password-requests' })
 export class ResetPasswordRequest {
   @Prop({ required: true })
   userId: string;

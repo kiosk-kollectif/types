@@ -1,11 +1,12 @@
 import {
   Body,
   Controller,
-  Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -19,27 +20,39 @@ import {
 } from '@nestjs/swagger';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { ToolsService } from './tools.service';
-import { Tool } from './tools.schema';
 import { Role } from 'src/common/enums/role.enum';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
+import { User } from 'src/users/users.decorator';
+import * as usersSchema from 'src/users/users.schema';
 
 @ApiTags('Tools')
 @Controller('tools')
 export class ToolsController {
   constructor(private readonly toolsService: ToolsService) {}
-  async getToolById() {}
+
+  @Get('/')
+  async getTools(
+    @Query('query') query?: string,
+    @Query('category') category?: string,
+    @Query('page') page?: number,
+    @Query('order') order?: 'asc' | 'desc',
+  ) {
+    const tools = await this.toolsService.getTools(
+      query,
+      category,
+      page,
+      order,
+    );
+
+    return {
+      tools,
+    };
+  }
 
   @Post('/')
   @PermissionLevel([Role.ADMIN, Role.MANAGER, Role.APPLICANT])
   @ApiOperation({ summary: 'Creer un nouvel outils' })
-  @ApiCreatedResponse({
-    description: "l'outils a ete cree",
-    example: {
-      StatusCode: 201,
-      Message: 'Tool created successfully',
-      datac: { Tool },
-    },
-  })
+  @ApiCreatedResponse({ description: "l'outils a ete cree" })
   @ApiBadRequestResponse({ description: 'Parametres manquants' })
   @ApiNotFoundResponse({
     description: "l'utilisateur n'existe pas ou la categorie est inexistante",
@@ -48,8 +61,13 @@ export class ToolsController {
   async createTool(
     @Body() createToolDto: CreateToolDto,
     @UploadedFiles() images: Express.Multer.File[],
+    @User() user: usersSchema.UserDocument,
   ) {
-    const tool = await this.toolsService.CreateTool(createToolDto, images);
+    const tool = await this.toolsService.CreateTool(
+      user,
+      createToolDto,
+      images,
+    );
 
     return {
       StatusCode: HttpStatus.CREATED,
@@ -58,9 +76,9 @@ export class ToolsController {
     };
   }
 
-  @Delete('/:id')
+  @Post(':id/delete')
   @HttpCode(HttpStatus.ACCEPTED)
-  // @PermissionLevel([Role.ADMIN, Role.MANAGER, Role.APPLICANT])
+  @PermissionLevel([Role.ADMIN, Role.MANAGER, Role.APPLICANT])
   @ApiOperation({ summary: 'Supprimer un outil' })
   @ApiCreatedResponse({
     description: "l'outils a ete supprime",

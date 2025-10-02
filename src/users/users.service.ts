@@ -116,7 +116,7 @@ export class UsersService {
     userProfil: EditUserProfilDto,
     picture?: Express.Multer.File,
   ) {
-    if (user.profil)
+    if (!user.profil)
       user.profil = {
         adress: undefined,
         phone: undefined,
