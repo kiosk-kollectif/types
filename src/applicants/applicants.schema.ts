@@ -5,7 +5,7 @@ import { User } from 'src/users/users.schema';
 
 export type ApplicationRequestDocument = ApplicationRequest & Document;
 
-@Schema({ collection: 'application_requests' })
+@Schema({ collection: 'application_requests', versionKey: false })
 export class ApplicationRequest {
   @Prop({ required: true, ref: User.name })
   user_id: Types.ObjectId;

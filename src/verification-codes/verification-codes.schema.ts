@@ -2,7 +2,11 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type VerificationCodeDocument = VerificationCode & Document;
 
-@Schema()
+@Schema({
+  collection: 'verification-codes',
+  timestamps: true,
+  versionKey: false,
+})
 export class VerificationCode {
   @Prop({ required: true })
   code: number;

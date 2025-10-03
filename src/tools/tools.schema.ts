@@ -7,12 +7,7 @@ import { WhareHouse } from 'src/warehouses/warehouses.schema';
 
 export type ToolDocment = Tool & Document;
 
-export type ToolAvailability = {
-  start_date: Date;
-  end_date: Date;
-}[];
-
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, versionKey: false })
 export class Tool {
   @Prop({ required: true })
   name: string;
@@ -37,9 +32,6 @@ export class Tool {
 
   @Prop({ required: false })
   price: number;
-
-  @Prop({ required: false })
-  availability: ToolAvailability;
 
   @Prop({ ref: WhareHouse.name })
   location: Types.ObjectId;

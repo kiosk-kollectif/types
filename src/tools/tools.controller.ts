@@ -37,6 +37,7 @@ export class ToolsController {
     @Query('page') page?: number,
     @Query('order') order?: 'asc' | 'desc',
   ) {
+    //TODO: retravailler sur la requete
     const tools = await this.toolsService.getTools(
       query,
       category,

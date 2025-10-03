@@ -5,7 +5,7 @@ import { Role } from 'src/common/enums/role.enum';
 export type UserDocument = User & Document;
 export type UserProfilDocument = UserProfil & Document;
 
-@Schema()
+@Schema({ versionKey: false })
 export class UserProfil {
   @Prop({ default: undefined })
   adress?: string;
@@ -22,7 +22,7 @@ export class UserProfil {
 
 export const UserProfilSchema = SchemaFactory.createForClass(UserProfil);
 
-@Schema()
+@Schema({ versionKey: false, timestamps: true })
 export class User {
   @Prop({ required: true })
   firstname: string;
@@ -44,12 +44,6 @@ export class User {
 
   @Prop({ required: true, default: false })
   verified: boolean;
-
-  @Prop({ required: true, default: Date.now() })
-  createdAt: Date;
-
-  @Prop({ required: true, default: Date.now() })
-  updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

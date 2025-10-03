@@ -1,5 +1,5 @@
 export enum ToolRequestStatus {
   PENDING = 'pending',
-  ACCEPTED = 'acCepted',
+  ACCEPTED = 'accepted',
   REJECTED = 'rejected',
 }

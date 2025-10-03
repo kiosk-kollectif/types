@@ -13,6 +13,8 @@ import sharp from 'sharp';
 import { ToolsCategoriesService } from 'src/tools-categories/tools-categories.service';
 import { UserDocument } from 'src/users/users.schema';
 import { Role } from 'src/common/enums/role.enum';
+import { ToolsCategoriesDocument } from 'src/tools-categories/tools-categories.schema';
+import { ToolRequestStatus } from 'src/common/enums/tool-request-status.enum';
 
 @Injectable()
 export class ToolsService {
@@ -36,7 +38,9 @@ export class ToolsService {
       searchOptions.category = categorie;
     }
 
-    const search = this.toolModel.find(searchOptions);
+    const search = this.toolModel
+      .find(searchOptions)
+      .where({ status: ToolRequestStatus.ACCEPTED });
     if (order === 'desc') {
       search.sort({ createdAt: -1 });
     }
@@ -46,10 +50,18 @@ export class ToolsService {
     search.limit(20);
 
     const items = await search
-      .populate('owner_id', 'firstname lastname profil')
+      .populate(
+        'owner_id',
+        'firstname lastname profil.picture profil.thumbnail',
+      )
       .populate('category', 'name');
 
-    return items;
+    return items.map((item) => {
+      return {
+        ...item.toObject(),
+        category: (item.category as unknown as ToolsCategoriesDocument).name,
+      };
+    });
   }
 
   async CreateTool(

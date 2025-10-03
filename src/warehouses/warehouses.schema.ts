@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 
 export type WhareHouseDocument = WhareHouse & Document;
 
-@Schema()
+@Schema({ versionKey: false, timestamps: true })
 export class WhareHouse {
   @Prop({ required: true })
   name: string;
@@ -16,12 +16,6 @@ export class WhareHouse {
 
   @Prop({ required: false })
   manager_id: Types.ObjectId;
-
-  @Prop({ required: true, default: Date.now() })
-  createdAt: Date;
-
-  @Prop({ required: true, default: Date.now() })
-  updatedAt: Date;
 }
 
 export const WhareHouseSchema = SchemaFactory.createForClass(WhareHouse);

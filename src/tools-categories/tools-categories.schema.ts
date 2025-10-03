@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 export type ToolsCategoriesDocument = ToolsCategories & Document;
 
-@Schema()
+@Schema({ collection: 'tools-categories', versionKey: false })
 export class ToolsCategories {
   @Prop({ required: true, unique: true })
   name: string;
