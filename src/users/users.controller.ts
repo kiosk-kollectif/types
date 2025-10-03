@@ -30,6 +30,8 @@ import { User } from './users.decorator';
 import * as usersSchema from './users.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
 
+//TODO: ajouter une nouvelle methode qui retourne les donnees publiques uniquement pour les users
+
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
@@ -127,7 +129,7 @@ export class UsersController {
     return {
       statusCode: HttpStatus.OK,
       message: 'User fetched successfully',
-      data: user as AuthPayload,
+      data: user as unknown as AuthPayload,
     };
   }
 
