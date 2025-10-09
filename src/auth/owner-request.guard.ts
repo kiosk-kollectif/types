@@ -25,6 +25,6 @@ export class OwnerRequestGuard implements CanActivate {
 
     if (!id) return false;
 
-    return String(payload._id) === id;
+    return String(payload.id) === id;
   }
 }

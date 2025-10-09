@@ -2,27 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Types } from 'mongoose';
 import { Role } from 'src/common/enums/role.enum';
-import { UserProfil } from 'src/users/users.schema';
+import { UserProfil, UserPublicInfo } from 'src/users/users.schema';
 
 @Injectable()
 export class AuthService {
   constructor(private jwtService: JwtService) {}
 
-  signToken(playload: AuthPayload) {
-    return this.jwtService.sign({
-      _id: playload._id,
-      firstname: playload.firstname,
-      lastname: playload.lastname,
-      email: playload.email,
-      profil: playload.profil,
-      role: playload.role,
-      verified: playload.verified,
-      createdAt: playload.createdAt,
-      updatedAt: playload.updatedAt,
-    });
+  signToken<T extends object>(payload: T) {
+    return this.jwtService.sign(payload);
   }
 
-  verifyToken(token: string): AuthPayload {
+  verifyToken(token: string): UserPublicInfo {
     return this.jwtService.verify(token);
   }
 }

@@ -7,13 +7,13 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './users.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import {
   hashPassword,
   verifyPasswword,
 } from 'src/common/utils/passwordHashManager';
-import { AuthPayload, AuthService } from 'src/auth/auth.service';
+import { AuthService } from 'src/auth/auth.service';
 import { LoginUserInfoDto } from './dto/login-user-info.dto';
 import { EditUserProfilDto } from './dto/edit-user-profil.dto';
 import {
@@ -35,7 +35,7 @@ export class UsersService {
     private readonly authService: AuthService,
   ) {}
 
-  private async getLastPasswordResetRequest(id: string) {
+  private async getLastPasswordResetRequest(id: string | Types.ObjectId) {
     return await this.resetPasswordReqModel
       .findOne({ userId: id })
       .sort({ createdAt: -1 });
@@ -48,9 +48,9 @@ export class UsersService {
   }
 
   async registerUser(user: CreateUserDto): Promise<string> {
-    const { firstname, lastname, email, password } = user;
+    const { username, email, password } = user;
 
-    if (!firstname || !lastname || !email) {
+    if (!username || !email || !email) {
       throw new BadRequestException('Please provide all required fields');
     }
 
@@ -61,13 +61,14 @@ export class UsersService {
     }
 
     const newUser = await this.userModel.create({
-      firstname,
-      lastname,
+      username,
       email,
       passwordHash: password ? hashPassword(password) : null,
     });
 
-    const token = this.authService.signToken(newUser as unknown as AuthPayload);
+    console.log(newUser.toJSON());
+
+    const token = this.authService.signToken(newUser.toJSON());
 
     return token;
   }
@@ -87,7 +88,7 @@ export class UsersService {
       throw new BadRequestException('Invalid password');
     }
 
-    const token = this.authService.signToken(exist as unknown as AuthPayload);
+    const token = this.authService.signToken(exist.toJSON());
 
     return token;
   }
@@ -116,14 +117,6 @@ export class UsersService {
     userProfil: EditUserProfilDto,
     picture?: Express.Multer.File,
   ) {
-    if (!user.profil)
-      user.profil = {
-        adress: undefined,
-        phone: undefined,
-        picture: undefined,
-        thumbnail: undefined,
-      };
-
     if (picture) {
       const thumbBuffer = await sharp(picture.buffer)
         .resize({ width: 200 })
@@ -150,13 +143,11 @@ export class UsersService {
 
     await user.save();
 
-    return this.authService.signToken(user as unknown as AuthPayload);
+    return this.authService.signToken(user.toJSON());
   }
 
   async requestPasswordReset(user: UserDocument) {
-    const lastRequest = await this.getLastPasswordResetRequest(
-      user._id as string,
-    );
+    const lastRequest = await this.getLastPasswordResetRequest(user._id);
 
     if (lastRequest) {
       if (!lastRequest.isExpired) {
@@ -182,18 +173,16 @@ export class UsersService {
     if (userInfo.password) {
       user.passwordHash = hashPassword(userInfo['password']);
     }
-
     //Appliquer des verifications sur l'email
     // if (userInfo.email && userInfo.email !== user.email) {
     //   user.email = userInfo.email;
     //   user.verified = false;
     // }
 
-    if (userInfo.firstname) user.firstname = userInfo.firstname;
-    if (userInfo.lastname) user.lastname = userInfo.lastname;
+    // if (userInfo.firstname) user.firstname = userInfo.firstname;
+    // if (userInfo.lastname) user.lastname = userInfo.lastname;
 
     await user.save();
-
-    return this.authService.signToken(user as unknown as AuthPayload);
+    return this.authService.signToken(user.toJSON());
   }
 }

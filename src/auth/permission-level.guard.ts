@@ -29,7 +29,7 @@ export class PermissionLevelGuard implements CanActivate {
       const playload = this.getPermissionLevel(req);
 
       if (!playload?.role) return false;
-      const user = await this.userModel.findById(playload._id);
+      const user = await this.userModel.findById(playload.id);
       if (!user) return false;
       existsUser = user;
     } catch (error) {

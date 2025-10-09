@@ -76,7 +76,7 @@ export class ToolsService {
           "You don't have permission edit some fields",
         );
 
-      tool.owner_id = user._id as string;
+      tool.owner_id = user.id as string;
 
       //Case Admin adding a new tool for applicant
     } else {
