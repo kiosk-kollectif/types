@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { VerificationCodesController } from './verification-codes.controller';
 import { VerificationCodesService } from './verification-codes.service';
-import { UsersModule } from 'src/users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   VerificationCode,
@@ -11,7 +10,6 @@ import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
-    UsersModule,
     MongooseModule.forFeature([
       { name: VerificationCode.name, schema: VerificationCodesSchema },
     ]),

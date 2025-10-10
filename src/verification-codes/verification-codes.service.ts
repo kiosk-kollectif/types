@@ -1,35 +1,42 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
+  isExpired,
+  isOlderThanOneMinute,
   VerificationCode,
   VerificationCodeDocument,
 } from './verification-codes.schema';
-import { Model } from 'mongoose';
-import { UsersService } from 'src/users/users.service';
+import { Model, Types } from 'mongoose';
 import { sendAccountConfirmationMail } from 'src/common/utils/mailers';
+import { UserDocument } from 'src/users/users.schema';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class VerificationCodesService {
   constructor(
     @InjectModel(VerificationCode.name)
     private readonly verificationCodeModel: Model<VerificationCodeDocument>,
-    private readonly usersService: UsersService,
+    private readonly jwtService: AuthService,
   ) {}
 
-  private async getLastVerificationCode(userId: string) {
+  private async getLastVerificationCode(userId: string | Types.ObjectId) {
     return await this.verificationCodeModel
       .findOne({ userId })
       .sort({ createdAt: -1 });
   }
 
-  async createVerificationCode(id: string) {
-    const user = await this.usersService.getUserById(id);
+  async createVerificationCode(user: UserDocument) {
+    if (user.verified) throw new ConflictException('User already verifed');
 
     const lastVerification = await this.verificationCodeModel
       .findOne({ userId: user._id })
       .sort({ createdAt: -1 });
 
-    if (lastVerification && !lastVerification.isOlderThanOneMinute) {
+    if (lastVerification && !isOlderThanOneMinute(lastVerification.createdAt)) {
       throw new UnauthorizedException(
         'Veillez patienter avant de redemander un nouveau code',
       );
@@ -43,17 +50,20 @@ export class VerificationCodesService {
     await sendAccountConfirmationMail(user.email, VerificationCode.code);
   }
 
-  async confirmVerificationCode(id: string, code: number) {
-    const lastVerificationCode = await this.getLastVerificationCode(id);
+  async confirmVerificationCode(user: UserDocument, code: number) {
+    if (user.verified) throw new ConflictException('User already verifed');
+    const lastVerificationCode = await this.getLastVerificationCode(user._id);
 
     if (
       !lastVerificationCode ||
-      lastVerificationCode.isExpired ||
+      isExpired(lastVerificationCode.createdAt) ||
       lastVerificationCode.code !== code
     ) {
       throw new UnauthorizedException('Code de vérification invalide');
     }
 
-    await this.usersService.activeUserVerification(id);
+    user.verified = true;
+    await user.save();
+    return this.jwtService.signToken(user.toJSON());
   }
 }

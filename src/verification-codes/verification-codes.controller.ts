@@ -1,105 +1,63 @@
+import { Controller, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import {
-  BadRequestException,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+  ApiConflictResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { VerificationCodesService } from './verification-codes.service';
-import { OwnerRequestGuard } from 'src/auth/owner-request.guard';
-import { ApiUseBearer } from 'src/common/decorator/request-config.decorator';
+import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
+import { Role } from 'src/common/enums/role.enum';
+import { User } from 'src/users/users.decorator';
+import * as usersSchema from 'src/users/users.schema';
 
 @ApiTags('Codes et Verification')
 @Controller('verification-codes')
 export class VerificationCodesController {
   constructor(private readonly verifCodeServ: VerificationCodesService) {}
 
-  @UseGuards(OwnerRequestGuard)
+  @PermissionLevel(Object.values(Role))
   @Post('send')
   @HttpCode(200)
-  @ApiUseBearer()
   @ApiOperation({ summary: 'Envoyer un code de vérification' })
-  @ApiQuery({ name: 'id', required: true, description: "ID de l'utilisateur" })
-  @ApiResponse({
-    status: 200,
-    description: 'Code de vérification envoyé avec succès',
-    schema: {
-      example: {
-        statusCode: 200,
-        message: 'Verification code sent successfully',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: "L'utilisateur n'existe pas",
-  })
-  @ApiResponse({
-    status: 401,
+  @ApiOkResponse({ description: 'Code de vérification envoyé avec succès' })
+  @ApiUnauthorizedResponse({
     description: 'Veillez patienter avant de redemander un nouveau code',
   })
-  async sendVerificationCode(@Query('id') id: string) {
-    if (!id) {
-      throw new BadRequestException('ID is required');
-    }
-    await this.verifCodeServ.createVerificationCode(id);
-
+  @ApiConflictResponse({ description: "L'utilisateur est deja verifier" })
+  async sendVerificationCode(@User() user: usersSchema.UserDocument) {
+    await this.verifCodeServ.createVerificationCode(user);
     return {
       StatusCode: HttpStatus.OK,
       message: 'Verification code sent successfully',
     };
   }
 
-  @UseGuards(OwnerRequestGuard)
-  @ApiUseBearer()
+  @PermissionLevel(Object.values(Role))
   @Post('verify')
   @HttpCode(200)
   @ApiOperation({ summary: 'Vérifier un code de vérification' })
-  @ApiQuery({
-    name: 'id',
-    required: true,
-    description: "ID de l'utilisateur",
-    example: '68d46a5a0f81b0ed1467915d',
+  @ApiOkResponse({ description: 'Code de vérification vérifié avec succès' })
+  @ApiUnauthorizedResponse({
+    description: 'Code de confirmation invalide',
   })
-  @ApiQuery({
-    name: 'code',
-    required: true,
-    description: 'Code de vérification à vérifier',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Code de vérification vérifié avec succès',
-    schema: {
-      example: {
-        statusCode: 200,
-        message: 'Verification code confirmed successfully',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: "L'utilisateur n'existe pas",
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Paramètres manquants ou code de vérification invalide',
-  })
+  @ApiConflictResponse({ description: "L'utilisateur est deja verifier" })
   async confirmVerificationCode(
-    @Query('id') id: string,
+    @User() user: usersSchema.UserDocument,
     @Query('code') code: string,
   ) {
-    if (!id || !code) {
-      throw new BadRequestException('ID and code are required');
-    }
-
-    await this.verifCodeServ.confirmVerificationCode(id, parseInt(code));
+    const token = await this.verifCodeServ.confirmVerificationCode(
+      user,
+      parseInt(code),
+    );
 
     return {
       StatusCode: HttpStatus.OK,
       message: 'Verification code confirmed successfully',
+      data: {
+        token,
+      },
     };
   }
 }

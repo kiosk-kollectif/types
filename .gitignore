@@ -60,3 +60,4 @@ package-lock.json
 request.http
 requests
 openapi.json
+.vercel

@@ -23,11 +23,25 @@ export class VerificationCode {
   get isExpired(): boolean {
     return this.expireAt.getTime() < new Date().getTime();
   }
-
-  get isOlderThanOneMinute(): boolean {
-    return this.createdAt.getTime() < new Date().getTime() - 60 * 1000;
-  }
 }
 
 export const VerificationCodesSchema =
   SchemaFactory.createForClass(VerificationCode);
+
+export function isOlderThanOneMinute(createdAt: Date | string): boolean {
+  console.log(createdAt);
+  return (
+    (typeof createdAt === 'string'
+      ? new Date(createdAt)
+      : createdAt
+    ).getTime() <
+    new Date().getTime() - 60 * 1000
+  );
+}
+
+export const isExpired = (expireAt: Date | string): boolean => {
+  return (
+    (typeof expireAt === 'string' ? new Date(expireAt) : expireAt).getTime() <
+    new Date().getTime()
+  );
+};

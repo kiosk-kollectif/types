@@ -93,23 +93,12 @@ export class UsersService {
     return token;
   }
 
-  async getUserById(id: string): Promise<UserDocument> {
+  async getUserById(id: string | Types.ObjectId): Promise<UserDocument> {
     const user = await this.userModel.findById(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
     return user;
-  }
-
-  async activeUserVerification(id: string) {
-    const user = await this.getUserById(id);
-
-    if (user.verified) {
-      throw new BadRequestException('User already verified');
-    }
-
-    user.verified = true;
-    await user.save();
   }
 
   async editUserProfile(
