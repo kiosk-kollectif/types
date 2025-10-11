@@ -42,12 +42,12 @@ export class VerificationCodesService {
       );
     }
 
-    const VerificationCode = await this.verificationCodeModel.create({
+    const verificationCode = await this.verificationCodeModel.create({
       userId: user._id,
       code: Math.floor(100000 + Math.random() * 900000),
     });
 
-    await sendAccountConfirmationMail(user.email, VerificationCode.code);
+    await sendAccountConfirmationMail(user.email, verificationCode.code);
   }
 
   async confirmVerificationCode(user: UserDocument, code: number) {
@@ -56,7 +56,7 @@ export class VerificationCodesService {
 
     if (
       !lastVerificationCode ||
-      isExpired(lastVerificationCode.createdAt) ||
+      isExpired(lastVerificationCode.expireAt) ||
       lastVerificationCode.code !== code
     ) {
       throw new UnauthorizedException('Code de vérification invalide');

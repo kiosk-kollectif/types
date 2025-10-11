@@ -11,25 +11,24 @@ export class VerificationCode {
   @Prop({ required: true })
   code: number;
 
-  @Prop({ default: new Date(Date.now() + 1000 * 60 * 10), required: true }) //Expire dans 10min
-  expireAt: Date;
-
-  @Prop({ default: Date.now(), required: true })
-  createdAt: Date;
-
   @Prop({ required: true })
   userId: string;
 
-  get isExpired(): boolean {
-    return this.expireAt.getTime() < new Date().getTime();
-  }
+  @Prop({
+    default: () => new Date(Date.now() + 60 * 1000 * 5), //5min
+    required: true,
+  })
+  expireAt: Date;
+
+  createdAt: Date;
+
+  updatedAt: Date;
 }
 
 export const VerificationCodesSchema =
   SchemaFactory.createForClass(VerificationCode);
 
 export function isOlderThanOneMinute(createdAt: Date | string): boolean {
-  console.log(createdAt);
   return (
     (typeof createdAt === 'string'
       ? new Date(createdAt)

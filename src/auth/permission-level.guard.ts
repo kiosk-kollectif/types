@@ -32,13 +32,12 @@ export class PermissionLevelGuard implements CanActivate {
       const user = await this.userModel.findById(playload.id);
       if (!user) return false;
       existsUser = user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.log(error);
       return false;
     }
 
     req.user = existsUser;
-    // console.log(existsUser);
     return permissionLevel.includes(existsUser.role);
   }
 

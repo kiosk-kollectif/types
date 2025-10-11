@@ -66,8 +66,6 @@ export class UsersService {
       passwordHash: password ? hashPassword(password) : null,
     });
 
-    console.log(newUser.toJSON());
-
     const token = this.authService.signToken(newUser.toJSON());
 
     return token;

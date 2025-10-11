@@ -38,7 +38,16 @@ export class VerificationCodesController {
   @Post('verify')
   @HttpCode(200)
   @ApiOperation({ summary: 'Vérifier un code de vérification' })
-  @ApiOkResponse({ description: 'Code de vérification vérifié avec succès' })
+  @ApiOkResponse({
+    description: 'Code de vérification vérifié avec succès',
+    example: {
+      StatusCode: HttpStatus.OK,
+      message: 'Verification code confirmed successfully',
+      data: {
+        token: 'user Token',
+      },
+    },
+  })
   @ApiUnauthorizedResponse({
     description: 'Code de confirmation invalide',
   })
