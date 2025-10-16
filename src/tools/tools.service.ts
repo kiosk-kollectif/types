@@ -13,7 +13,6 @@ import sharp from 'sharp';
 import { ToolsCategoriesService } from 'src/tools-categories/tools-categories.service';
 import { UserDocument } from 'src/users/users.schema';
 import { Role } from 'src/common/enums/role.enum';
-import { ToolsCategoriesDocument } from 'src/tools-categories/tools-categories.schema';
 import { ToolRequestStatus } from 'src/common/enums/tool-request-status.enum';
 
 @Injectable()
@@ -26,8 +25,9 @@ export class ToolsService {
   async getTools(
     query?: string,
     categorie?: string,
-    page?: number,
-    order = 'asc',
+    page: number = 1,
+    status?: ToolRequestStatus,
+    limit: number = 10,
   ) {
     const searchOptions: RootFilterQuery<ToolDocment> = {};
     if (query) {
@@ -41,27 +41,42 @@ export class ToolsService {
     const search = this.toolModel
       .find(searchOptions)
       .where({ status: ToolRequestStatus.ACCEPTED });
-    if (order === 'desc') {
-      search.sort({ createdAt: -1 });
-    }
-    if (page) {
-      search.skip((page - 1) * 20);
-    }
-    search.limit(20);
 
-    const items = await search
-      .populate(
-        'owner_id',
-        'firstname lastname profil.picture profil.thumbnail',
-      )
-      .populate('category', 'name');
+    if (status) {
+      search.where({ status });
+    }
 
-    return items.map((item) => {
-      return {
-        ...item.toObject(),
-        category: (item.category as unknown as ToolsCategoriesDocument).name,
-      };
+    const total = await this.toolModel.countDocuments({
+      ...searchOptions,
+      status: ToolRequestStatus.ACCEPTED,
     });
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const currentPage = Math.min(page, totalPages);
+    const skip = (currentPage - 1) * limit;
+
+    search.skip(skip);
+
+    search.limit(limit);
+
+    const items = await search;
+    const tools = await Promise.all(
+      items.map(async (item) => {
+        const categories = await this.toolsCategorieServ.getCategoryById(
+          item.category,
+        );
+        return {
+          ...item.toJSON(),
+          categories: [categories.name],
+        };
+      }),
+    );
+
+    return {
+      page: currentPage,
+      totalPages,
+      tools,
+    };
   }
 
   async CreateTool(

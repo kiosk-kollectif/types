@@ -4,7 +4,7 @@ import {
   ToolsCategories,
   ToolsCategoriesDocument,
 } from './tools-categories.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateCategoryDto } from './dto/create-category.dto';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class ToolsCategoriesService {
     return await this.toolsCategoriesModel.find();
   }
 
-  async getCategoryById(id: string) {
+  async getCategoryById(id: string | Types.ObjectId) {
     const category = await this.toolsCategoriesModel.findById(id);
     if (!category) {
       throw new ConflictException('This category does not exist');

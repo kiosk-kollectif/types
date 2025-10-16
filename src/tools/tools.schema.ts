@@ -21,9 +21,6 @@ export class Tool {
   @Prop()
   description: string;
 
-  // @Prop({ required: true })
-  // condition: string;
-
   @Prop({ required: true })
   thumbnail: string;
 
@@ -38,6 +35,9 @@ export class Tool {
 
   @Prop({ enum: ToolRequestStatus, default: ToolRequestStatus.PENDING })
   status: ToolRequestStatus;
+
+  @Prop({ required: true })
+  slug: string;
 }
 
 export const ToolDocumentSchema = SchemaFactory.createForClass(Tool);

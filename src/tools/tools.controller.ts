@@ -15,6 +15,7 @@ import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
@@ -24,6 +25,7 @@ import { Role } from 'src/common/enums/role.enum';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
 import { User } from 'src/users/users.decorator';
 import * as usersSchema from 'src/users/users.schema';
+import { ToolRequestStatus } from 'src/common/enums/tool-request-status.enum';
 
 @ApiTags('Tools')
 @Controller('tools')
@@ -31,22 +33,34 @@ export class ToolsController {
   constructor(private readonly toolsService: ToolsService) {}
 
   @Get('/')
+  @ApiOperation({ summary: 'Recuperer la liste des outils acceptes' })
+  @ApiOkResponse({
+    description: 'Requete valider',
+    example: {
+      StatusCode: HttpStatus.OK,
+      Message: 'Tools retrieved successfully',
+      data: {},
+    },
+  })
   async getTools(
     @Query('query') query?: string,
     @Query('category') category?: string,
     @Query('page') page?: number,
-    @Query('order') order?: 'asc' | 'desc',
+    @Query('limit') limit?: number,
+    @Query('status') status?: ToolRequestStatus,
   ) {
-    //TODO: retravailler sur la requete
-    const tools = await this.toolsService.getTools(
+    const toolsData = await this.toolsService.getTools(
       query,
       category,
       page,
-      order,
+      status,
+      limit,
     );
 
     return {
-      tools,
+      StatusCode: HttpStatus.OK,
+      Message: 'Tools retrieved successfully',
+      data: { ...toolsData },
     };
   }
 
