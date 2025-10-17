@@ -57,7 +57,9 @@ export class ToolsCategoriesController {
       StatusCode: HttpStatus.OK,
       Message: 'La liste des categories a ete recuperee avec succes',
       data: {
-        categories,
+        categories: categories.map((c) => {
+          return { id: c._id, name: c.name, description: c.description };
+        }),
       },
     };
   }

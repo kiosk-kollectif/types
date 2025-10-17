@@ -26,6 +26,16 @@ export class ToolsCategoriesService {
     return category;
   }
 
+  async getCategoriesById(id: Array<string | Types.ObjectId>) {
+    try {
+      return await this.toolsCategoriesModel.find({ _id: { $in: id } });
+    } catch (error) {
+      throw new ConflictException('This category does not exist', {
+        description: (<Error>error).message,
+      });
+    }
+  }
+
   async createCategory(categoryDto: CreateCategoryDto) {
     const newCategory = {
       ...categoryDto,

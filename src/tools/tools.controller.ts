@@ -39,7 +39,11 @@ export class ToolsController {
     example: {
       StatusCode: HttpStatus.OK,
       Message: 'Tools retrieved successfully',
-      data: {},
+      data: {
+        page: 1,
+        totalPage: 1,
+        tools: 'Liste des outils',
+      },
     },
   })
   async getTools(

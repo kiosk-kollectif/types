@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Tool, ToolDocment } from './tools.schema';
-import { Model, RootFilterQuery } from 'mongoose';
+import { Model, RootFilterQuery, Types } from 'mongoose';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { uploadFile } from 'src/common/utils/cloudinary';
 import sharp from 'sharp';
@@ -24,7 +24,7 @@ export class ToolsService {
 
   async getTools(
     query?: string,
-    categorie?: string,
+    category?: string,
     page: number = 1,
     status?: ToolRequestStatus,
     limit: number = 10,
@@ -34,8 +34,8 @@ export class ToolsService {
       searchOptions.name = { $regex: new RegExp(query, 'i') };
     }
 
-    if (categorie) {
-      searchOptions.category = categorie;
+    if (category) {
+      searchOptions.categories = { $in: [new Types.ObjectId(category)] };
     }
 
     const search = this.toolModel
@@ -59,23 +59,16 @@ export class ToolsService {
 
     search.limit(limit);
 
-    const items = await search;
-    const tools = await Promise.all(
-      items.map(async (item) => {
-        const categories = await this.toolsCategorieServ.getCategoryById(
-          item.category,
-        );
-        return {
-          ...item.toJSON(),
-          categories: [categories.name],
-        };
-      }),
-    );
+    const tools = await search
+      .populate('categories', 'name')
+      .populate('location', 'name');
+
+    console.log(tools);
 
     return {
       page: currentPage,
       totalPages,
-      tools,
+      tools: tools.map((tool) => tool.getPublicInfo()),
     };
   }
 

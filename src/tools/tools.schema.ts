@@ -5,7 +5,19 @@ import { ToolsCategories } from 'src/tools-categories/tools-categories.schema';
 import { User } from 'src/users/users.schema';
 import { WhareHouse } from 'src/warehouses/warehouses.schema';
 
-export type ToolDocment = Tool & Document;
+export type ToolDocment = Tool &
+  Document & { getPublicInfo: () => ToolPublicInfo };
+
+export type ToolPublicInfo = {
+  name: string;
+  description: string;
+  thumbnail: string;
+  categories: string[];
+  images: string[];
+  dayprice: number;
+  location?: string;
+  slug: string;
+};
 
 @Schema({ timestamps: true, versionKey: false })
 export class Tool {
@@ -15,8 +27,12 @@ export class Tool {
   @Prop({ required: true, ref: User.name, type: Types.ObjectId })
   owner_id: Types.ObjectId;
 
-  @Prop({ required: true, ref: ToolsCategories.name, type: Types.ObjectId })
-  category: Types.ObjectId;
+  @Prop({
+    required: true,
+    ref: ToolsCategories.name,
+    type: [Types.ObjectId],
+  })
+  categories: Types.ObjectId[];
 
   @Prop()
   description: string;
@@ -28,7 +44,7 @@ export class Tool {
   images: string[];
 
   @Prop({ required: false })
-  price: number;
+  dayprice: number;
 
   @Prop({ ref: WhareHouse.name })
   location: Types.ObjectId;
@@ -41,3 +57,44 @@ export class Tool {
 }
 
 export const ToolDocumentSchema = SchemaFactory.createForClass(Tool);
+
+function getToolsPublicInfo(this: ToolDocment): ToolPublicInfo {
+  const categories: string[] = [];
+
+  if (Array.isArray(this.categories)) {
+    this.categories.forEach((cat: unknown) => {
+      if (
+        typeof cat == 'object' &&
+        cat !== null &&
+        'name' in cat &&
+        typeof cat.name == 'string'
+      ) {
+        categories.push(cat.name);
+      }
+    });
+  }
+
+  let location: string | undefined = undefined;
+
+  if (
+    this.location &&
+    typeof this.location == 'object' &&
+    'name' in this.location &&
+    typeof this.location.name == 'string'
+  ) {
+    location = this.location.name;
+  }
+
+  return {
+    name: this.name,
+    description: this.description,
+    thumbnail: this.thumbnail,
+    categories,
+    images: this.images,
+    dayprice: this.dayprice,
+    slug: this.slug,
+    location,
+  };
+}
+
+ToolDocumentSchema.methods.getPublicInfo = getToolsPublicInfo;
