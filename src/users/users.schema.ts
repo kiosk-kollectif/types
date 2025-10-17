@@ -63,6 +63,8 @@ export class User {
   verified: boolean;
 
   _id: Types.ObjectId;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
