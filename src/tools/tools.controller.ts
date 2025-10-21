@@ -113,4 +113,20 @@ export class ToolsController {
       data: { deleted },
     };
   }
+
+  @Get('/slug/:slug')
+  @ApiOperation({ summary: 'Recuperer un outil par son slug' })
+  @ApiOkResponse({
+    description: 'Requete valider',
+  })
+  @ApiNotFoundResponse({ description: 'Item non existant' })
+  async getToolBySlug(@Param('slug') slug: string) {
+    const tool = await this.toolsService.getToolBySlug(slug);
+
+    return {
+      StatusCode: HttpStatus.OK,
+      Message: 'Tool retrieved successfully',
+      data: { tool },
+    };
+  }
 }

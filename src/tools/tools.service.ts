@@ -63,7 +63,7 @@ export class ToolsService {
       .populate('categories', 'name')
       .populate('location', 'name');
 
-    console.log(tools);
+    // console.log(tools);
 
     return {
       page: currentPage,
@@ -141,5 +141,16 @@ export class ToolsService {
     const deleted = await this.getToolById(id);
     await this.toolModel.deleteOne({ _id: deleted._id });
     return deleted;
+  }
+
+  async getToolBySlug(slug: string) {
+    console.log(slug);
+
+    const tool = await this.toolModel
+      .findOne({ slug })
+      .populate('categories', 'name')
+      .populate('location', 'name');
+    if (!tool) throw new NotFoundException('tool not found');
+    return tool.getPublicInfo();
   }
 }
