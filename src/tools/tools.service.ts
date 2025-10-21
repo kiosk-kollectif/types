@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Tool, ToolDocment } from './tools.schema';
+import { Tool, ToolDocument } from './tools.schema';
 import { Model, RootFilterQuery, Types } from 'mongoose';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { uploadFile } from 'src/common/utils/cloudinary';
@@ -18,7 +18,7 @@ import { ToolRequestStatus } from 'src/common/enums/tool-request-status.enum';
 @Injectable()
 export class ToolsService {
   constructor(
-    @InjectModel(Tool.name) private readonly toolModel: Model<ToolDocment>,
+    @InjectModel(Tool.name) private readonly toolModel: Model<ToolDocument>,
     private readonly toolsCategorieServ: ToolsCategoriesService,
   ) {}
 
@@ -29,7 +29,7 @@ export class ToolsService {
     status?: ToolRequestStatus,
     limit: number = 10,
   ) {
-    const searchOptions: RootFilterQuery<ToolDocment> = {};
+    const searchOptions: RootFilterQuery<ToolDocument> = {};
     if (query) {
       searchOptions.name = { $regex: new RegExp(query, 'i') };
     }
@@ -61,7 +61,8 @@ export class ToolsService {
 
     const tools = await search
       .populate('categories', 'name')
-      .populate('location', 'name');
+      .populate('location', 'name')
+      .populate('owner_id');
 
     // console.log(tools);
 
@@ -149,7 +150,9 @@ export class ToolsService {
     const tool = await this.toolModel
       .findOne({ slug })
       .populate('categories', 'name')
-      .populate('location', 'name');
+      .populate('location', 'name')
+      .populate('owner_id');
+
     if (!tool) throw new NotFoundException('tool not found');
     return tool.getPublicInfo();
   }

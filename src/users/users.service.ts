@@ -66,7 +66,7 @@ export class UsersService {
       passwordHash: password ? hashPassword(password) : null,
     });
 
-    const token = this.authService.signToken(newUser.toJSON());
+    const token = this.authService.signToken(newUser.getUserPublicProfil());
 
     return token;
   }
@@ -86,7 +86,7 @@ export class UsersService {
       throw new BadRequestException('Invalid password');
     }
 
-    const token = this.authService.signToken(exist.toJSON());
+    const token = this.authService.signToken(exist.getUserPublicProfil());
 
     return token;
   }
@@ -130,7 +130,7 @@ export class UsersService {
 
     await user.save();
 
-    return this.authService.signToken(user.toJSON());
+    return this.authService.signToken(user.getUserPublicProfil());
   }
 
   async requestPasswordReset(user: UserDocument) {
@@ -170,6 +170,6 @@ export class UsersService {
     // if (userInfo.lastname) user.lastname = userInfo.lastname;
 
     await user.save();
-    return this.authService.signToken(user.toJSON());
+    return this.authService.signToken(user.getUserPublicProfil());
   }
 }

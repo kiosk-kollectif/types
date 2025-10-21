@@ -2,7 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Role } from 'src/common/enums/role.enum';
 
-export type UserDocument = User & Document;
+export type UserDocument = User &
+  Document & { getUserPublicProfil: typeof getUserPublicProfil };
 export type UserProfilDocument = UserProfil & Document;
 
 export type UserPublicInfo = {
@@ -15,6 +16,7 @@ export type UserPublicInfo = {
     picture?: string;
     thumbnail?: string;
   };
+  memberSince: string;
 };
 
 @Schema({ versionKey: false })
@@ -63,25 +65,32 @@ export class User {
   verified: boolean;
 
   _id: Types.ObjectId;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.set('toJSON', {
-  transform: (_, ret) => {
-    return {
-      id: ret._id,
-      username: ret.username,
-      email: ret.email,
-      role: ret.role,
-      verified: ret.verified,
-      profil: ret.profil
-        ? {
-            picture: ret.profil?.picture,
-            thumbnail: ret.profil?.thumbnail,
-          }
-        : undefined,
-    };
-  },
-});
+
+export function getUserPublicProfil(this: UserDocument): UserPublicInfo {
+  const memberSince = this.createdAt.toLocaleDateString('fr-FR', {
+    month: 'long',
+    year: 'numeric',
+  });
+
+  return {
+    id: this._id,
+    username: this.username,
+    email: this.email,
+    role: this.role,
+    verified: this.verified,
+    profil: this.profil
+      ? {
+          picture: this.profil?.picture,
+          thumbnail: this.profil?.thumbnail,
+        }
+      : undefined,
+    memberSince,
+  };
+}
+
+UserSchema.methods.getUserPublicProfil = getUserPublicProfil;

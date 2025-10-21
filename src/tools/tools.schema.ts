@@ -2,10 +2,14 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ToolRequestStatus } from 'src/common/enums/tool-request-status.enum';
 import { ToolsCategories } from 'src/tools-categories/tools-categories.schema';
-import { User } from 'src/users/users.schema';
+import {
+  getUserPublicProfil,
+  User,
+  UserPublicInfo,
+} from 'src/users/users.schema';
 import { WhareHouse } from 'src/warehouses/warehouses.schema';
 
-export type ToolDocment = Tool &
+export type ToolDocument = Tool &
   Document & { getPublicInfo: () => ToolPublicInfo };
 
 export type ToolPublicInfo = {
@@ -17,6 +21,7 @@ export type ToolPublicInfo = {
   dayprice: number;
   location?: string;
   slug: string;
+  owner?: UserPublicInfo;
 };
 
 @Schema({ timestamps: true, versionKey: false })
@@ -58,7 +63,7 @@ export class Tool {
 
 export const ToolDocumentSchema = SchemaFactory.createForClass(Tool);
 
-function getToolsPublicInfo(this: ToolDocment): ToolPublicInfo {
+function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
   const categories: string[] = [];
 
   if (Array.isArray(this.categories)) {
@@ -85,6 +90,13 @@ function getToolsPublicInfo(this: ToolDocment): ToolPublicInfo {
     location = this.location.name;
   }
 
+  let owner: UserPublicInfo | undefined = undefined;
+
+  if (this.owner_id && typeof this.owner_id == 'object') {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    owner = getUserPublicProfil.call(this.owner_id);
+  }
+
   return {
     name: this.name,
     description: this.description,
@@ -94,6 +106,7 @@ function getToolsPublicInfo(this: ToolDocment): ToolPublicInfo {
     dayprice: this.dayprice,
     slug: this.slug,
     location,
+    owner,
   };
 }
 

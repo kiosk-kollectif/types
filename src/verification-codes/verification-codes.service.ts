@@ -64,6 +64,6 @@ export class VerificationCodesService {
 
     user.verified = true;
     await user.save();
-    return this.jwtService.signToken(user.toJSON());
+    return this.jwtService.signToken(user.getUserPublicProfil());
   }
 }
