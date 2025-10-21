@@ -64,8 +64,6 @@ export class ToolsService {
       .populate('location', 'name')
       .populate('owner_id');
 
-    // console.log(tools);
-
     return {
       page: currentPage,
       totalPages,
@@ -145,8 +143,6 @@ export class ToolsService {
   }
 
   async getToolBySlug(slug: string) {
-    console.log(slug);
-
     const tool = await this.toolModel
       .findOne({ slug })
       .populate('categories', 'name')
