@@ -1,7 +1,5 @@
-import { Types } from 'mongoose';
-
 export type UserPublicInfo = {
-  id: Types.ObjectId;
+  id: string;
   username: string;
   email: string;
   role: UserRole;
