@@ -21,11 +21,10 @@ import {
 } from '@nestjs/swagger';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { ToolsService } from './tools.service';
-import { Role } from 'src/common/enums/role.enum';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
 import { User } from 'src/users/users.decorator';
 import * as usersSchema from 'src/users/users.schema';
-import { ToolRequestStatus } from 'src/common/enums/tool-request-status.enum';
+import { ToolRequestStatus, UserRole } from 'src/types';
 
 @ApiTags('Tools')
 @Controller('tools')
@@ -69,7 +68,7 @@ export class ToolsController {
   }
 
   @Post('/')
-  @PermissionLevel([Role.ADMIN, Role.MANAGER, Role.APPLICANT])
+  @PermissionLevel(Object.keys(UserRole))
   @ApiOperation({ summary: 'Creer un nouvel outils' })
   @ApiCreatedResponse({ description: "l'outils a ete cree" })
   @ApiBadRequestResponse({ description: 'Parametres manquants' })
@@ -97,7 +96,7 @@ export class ToolsController {
 
   @Post(':id/delete')
   @HttpCode(HttpStatus.ACCEPTED)
-  @PermissionLevel([Role.ADMIN, Role.MANAGER, Role.APPLICANT])
+  @PermissionLevel(Object.keys(UserRole))
   @ApiOperation({ summary: 'Supprimer un outil' })
   @ApiCreatedResponse({
     description: "l'outils a ete supprime",

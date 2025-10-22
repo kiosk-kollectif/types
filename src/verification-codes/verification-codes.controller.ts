@@ -8,16 +8,16 @@ import {
 } from '@nestjs/swagger';
 import { VerificationCodesService } from './verification-codes.service';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
-import { Role } from 'src/common/enums/role.enum';
 import { User } from 'src/users/users.decorator';
 import * as usersSchema from 'src/users/users.schema';
+import { UserRole } from 'src/types';
 
 @ApiTags('Codes et Verification')
 @Controller('verification-codes')
 export class VerificationCodesController {
   constructor(private readonly verifCodeServ: VerificationCodesService) {}
 
-  @PermissionLevel(Object.values(Role))
+  @PermissionLevel(Object.values(UserRole))
   @Post('send')
   @HttpCode(200)
   @ApiOperation({ summary: 'Envoyer un code de vérification' })
@@ -34,7 +34,7 @@ export class VerificationCodesController {
     };
   }
 
-  @PermissionLevel(Object.values(Role))
+  @PermissionLevel(Object.values(UserRole))
   @Post('verify')
   @HttpCode(200)
   @ApiOperation({ summary: 'Vérifier un code de vérification' })

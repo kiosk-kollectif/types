@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Types } from 'mongoose';
-import { Role } from 'src/common/enums/role.enum';
-import { UserProfil, UserPublicInfo } from 'src/users/users.schema';
+import { UserPublicInfo, UserRole } from 'src/types';
+import { UserProfil } from 'src/users/users.schema';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +23,7 @@ export class AuthPayload {
   lastname: string;
   email: string;
   profil: UserProfil;
-  role: Role;
+  role: UserRole;
   verified: boolean;
   createdAt: Date;
   updatedAt: Date;

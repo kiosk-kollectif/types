@@ -1,28 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { ToolRequestStatus } from 'src/common/enums/tool-request-status.enum';
 import { ToolsCategories } from 'src/tools-categories/tools-categories.schema';
-import {
-  getUserPublicProfil,
-  User,
-  UserPublicInfo,
-} from 'src/users/users.schema';
+import { ToolPublicInfo, ToolRequestStatus, UserPublicInfo } from 'src/types';
+import { getUserPublicProfil, User } from 'src/users/users.schema';
 import { WhareHouse } from 'src/warehouses/warehouses.schema';
 
 export type ToolDocument = Tool &
   Document & { getPublicInfo: () => ToolPublicInfo };
-
-export type ToolPublicInfo = {
-  name: string;
-  description: string;
-  thumbnail: string;
-  categories: string[];
-  images: string[];
-  dayprice: number;
-  location?: string;
-  slug: string;
-  owner?: UserPublicInfo;
-};
 
 @Schema({ timestamps: true, versionKey: false })
 export class Tool {
@@ -90,7 +74,7 @@ function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
     location = this.location.name;
   }
 
-  let owner: UserPublicInfo | undefined = undefined;
+  let owner!: UserPublicInfo;
 
   if (this.owner_id && typeof this.owner_id == 'object') {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

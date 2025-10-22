@@ -18,16 +18,16 @@ import {
 } from '@nestjs/swagger';
 import { ApplicantsService } from './applicants.service';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
-import { Role } from 'src/common/enums/role.enum';
 import { UserDocument } from 'src/users/users.schema';
 import { ApplicantRequestStatus } from 'src/common/enums/applicant-request-status.enum';
+import { UserRole } from 'src/types';
 
 @ApiTags('Gerer les requetes des deposant')
 @Controller('applicants')
 export class ApplicantsController {
   constructor(private readonly applicantService: ApplicantsService) {}
 
-  @PermissionLevel([Role.USER])
+  @PermissionLevel([UserRole.USER])
   @Post('requests')
   @ApiOperation({ summary: 'Envoyer une requete' })
   @ApiCreatedResponse({ description: 'Requete envoyée' })
@@ -45,7 +45,7 @@ export class ApplicantsController {
     };
   }
 
-  @PermissionLevel([Role.ADMIN, Role.MANAGER])
+  @PermissionLevel([UserRole.ADMIN, UserRole.MANAGER])
   @Get('requests')
   @ApiOperation({ summary: 'Obtenir les requetes' })
   @ApiOkResponse({ description: 'Liste des requetes' })
@@ -61,7 +61,7 @@ export class ApplicantsController {
     };
   }
 
-  @PermissionLevel([Role.ADMIN, Role.MANAGER])
+  @PermissionLevel([UserRole.ADMIN, UserRole.MANAGER])
   @Post('requests/:id/update')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Modifier une requete' })

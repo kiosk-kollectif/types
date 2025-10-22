@@ -12,8 +12,7 @@ import { uploadFile } from 'src/common/utils/cloudinary';
 import sharp from 'sharp';
 import { ToolsCategoriesService } from 'src/tools-categories/tools-categories.service';
 import { UserDocument } from 'src/users/users.schema';
-import { Role } from 'src/common/enums/role.enum';
-import { ToolRequestStatus } from 'src/common/enums/tool-request-status.enum';
+import { ToolRequestStatus, UserRole } from '../types';
 
 @Injectable()
 export class ToolsService {
@@ -77,7 +76,7 @@ export class ToolsService {
     images: Express.Multer.File[],
   ) {
     //Check bro's permission Level
-    if (user.role == Role.APPLICANT) {
+    if (user.role == UserRole.APPLICANT) {
       if (tool.owner_id || tool.price || tool.location || tool.status)
         throw new UnauthorizedException(
           "You don't have permission edit some fields",

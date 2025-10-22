@@ -3,14 +3,14 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AddWarehouseDto } from './dto/add-warehouse.dto';
 import { WarehousesService } from './warehouses.service';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from 'src/types';
 
 @ApiTags('Conteneurs')
 @Controller('warehouses')
 export class WarehousesController {
   constructor(private readonly wareHouseServ: WarehousesService) {}
 
-  @PermissionLevel([Role.ADMIN])
+  @PermissionLevel([UserRole.ADMIN])
   @Post('add')
   @ApiOperation({ summary: 'Ajouter un conteneur' })
   @ApiResponse({ status: 200, description: 'Conteneur ajouté avec succès' })
@@ -28,7 +28,7 @@ export class WarehousesController {
     };
   }
 
-  @PermissionLevel([Role.ADMIN, Role.MANAGER])
+  @PermissionLevel([UserRole.ADMIN, UserRole.MANAGER])
   @Get(':id')
   @ApiOperation({ summary: 'Afficher un conteneur' })
   @ApiResponse({ status: 200, description: 'Conteneur affiché avec succès' })
@@ -46,14 +46,14 @@ export class WarehousesController {
     };
   }
 
-  @PermissionLevel([Role.ADMIN])
+  @PermissionLevel([UserRole.ADMIN])
   @Get(':id/delete')
   @ApiOperation({ summary: 'Supprimer un conteneur' })
   deleteWareHouse() {
     //TODO: Implementer deleteWareHouse
   }
 
-  @PermissionLevel([Role.ADMIN])
+  @PermissionLevel([UserRole.ADMIN])
   @Post(':id/update')
   @ApiOperation({ summary: 'Modifier un conteneur' })
   @ApiResponse({ status: 200, description: 'Conteneur modifié avec succès' })

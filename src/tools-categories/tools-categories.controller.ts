@@ -18,8 +18,8 @@ import {
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { ToolsCategoriesService } from './tools-categories.service';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
-import { Role } from 'src/common/enums/role.enum';
 import { CategorieNotFoundResponse } from './tools-categories.decorator';
+import { UserRole } from 'src/types';
 
 @ApiTags('Gerer les categories des outils')
 @Controller('tools-categories')
@@ -28,7 +28,7 @@ export class ToolsCategoriesController {
     private readonly toolsCategoriesService: ToolsCategoriesService,
   ) {}
 
-  @PermissionLevel([Role.ADMIN])
+  @PermissionLevel([UserRole.ADMIN])
   @Post('/')
   @ApiOperation({ summary: "Creer une nouvelle categorie d'outils" })
   @ApiCreatedResponse({ description: 'La categorie a ete cree avec succes' })
@@ -64,7 +64,7 @@ export class ToolsCategoriesController {
     };
   }
 
-  @PermissionLevel([Role.ADMIN])
+  @PermissionLevel([UserRole.ADMIN])
   @Delete('/:id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Supprimer une categorie d'outils" })
@@ -81,7 +81,7 @@ export class ToolsCategoriesController {
     };
   }
 
-  @PermissionLevel([Role.ADMIN])
+  @PermissionLevel([UserRole.ADMIN])
   @Post(':id/edit')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: "Modifier une categorie d'outils" })

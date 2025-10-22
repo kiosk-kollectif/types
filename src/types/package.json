@@ -1,0 +1,11 @@
+{
+  "name": "kiosk-kollectif-types",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  }
+}

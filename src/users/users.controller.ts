@@ -25,10 +25,10 @@ import { EditUserProfilDto } from './dto/edit-user-profil.dto';
 import { EditUserInfoDto } from './dto/edit-user-info.dto';
 import { ApiUseBearer } from 'src/common/decorator/request-config.decorator';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
-import { Role } from 'src/common/enums/role.enum';
 import { User } from './users.decorator';
 import * as usersSchema from './users.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UserRole } from 'src/types';
 
 //TODO: ajouter une nouvelle methode qui retourne les donnees publiques uniquement pour les users
 
@@ -133,7 +133,7 @@ export class UsersController {
     };
   }
 
-  @PermissionLevel([Role.ADMIN, Role.APPLICANT, Role.MANAGER, Role.USER])
+  @PermissionLevel(Object.values(UserRole))
   @Post('me/edit')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: "Mettre à jour les informations d'un utilisateur" })
@@ -157,7 +157,7 @@ export class UsersController {
     };
   }
 
-  @PermissionLevel([Role.ADMIN, Role.APPLICANT, Role.MANAGER, Role.USER])
+  @PermissionLevel(Object.values(UserRole))
   @Post('me/update-profil')
   @HttpCode(202)
   @UseInterceptors(FileInterceptor('picture'))
@@ -188,7 +188,7 @@ export class UsersController {
     };
   }
 
-  @PermissionLevel([Role.ADMIN, Role.APPLICANT, Role.MANAGER, Role.USER])
+  @PermissionLevel(Object.values(UserRole))
   @Post('me/request-password-reset')
   @HttpCode(202)
   @ApiUseBearer()

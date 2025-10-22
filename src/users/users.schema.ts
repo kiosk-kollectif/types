@@ -1,23 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Role } from 'src/common/enums/role.enum';
+import { UserPublicInfo, UserRole } from '../types';
 
 export type UserDocument = User &
   Document & { getUserPublicProfil: typeof getUserPublicProfil };
 export type UserProfilDocument = UserProfil & Document;
-
-export type UserPublicInfo = {
-  id: Types.ObjectId;
-  username: string;
-  email: string;
-  role: Role;
-  verified: boolean;
-  profil?: {
-    picture?: string;
-    thumbnail?: string;
-  };
-  memberSince: string;
-};
 
 @Schema({ versionKey: false })
 export class UserProfil {
@@ -58,8 +45,8 @@ export class User {
   @Prop({ type: UserProfilSchema })
   profil: UserProfil;
 
-  @Prop({ required: true, default: Role.USER, enum: Role })
-  role: Role;
+  @Prop({ required: true, default: UserRole.USER, enum: UserRole })
+  role: UserRole;
 
   @Prop({ required: true, default: false })
   verified: boolean;
