@@ -2,10 +2,14 @@
   "name": "kiosk-kollectif-types",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
-  "main": "index.ts",
-  "types": "index.ts",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
+    "build": "tsc",
     "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
   }
 }
