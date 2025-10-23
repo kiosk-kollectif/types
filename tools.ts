@@ -1,4 +1,4 @@
-import { type UserPublicInfo } from './users.js';
+import { type UserPublicInfo } from './users';
 
 export enum ToolRequestStatus {
   PENDING = 'pending',
