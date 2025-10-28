@@ -1,3 +1,5 @@
+import { ToolPublicInfo } from './tools';
+
 export type UserPublicInfo = {
   id: string;
   username: string;
@@ -25,4 +27,9 @@ export type User = UserPublicInfo & {
     phone?: string;
     adress?: string;
   };
+};
+
+export type UserStats = {
+  rentalsTools: { tools?: ToolPublicInfo[]; length: number };
+  total_rentedd_tools: { tools?: ToolPublicInfo[]; length: number };
 };
