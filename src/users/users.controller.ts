@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Param,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -20,7 +19,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { LoginUserInfoDto } from './dto/login-user-info.dto';
-import { AuthPayload } from 'src/auth/auth.service';
 import { EditUserProfilDto } from './dto/edit-user-profil.dto';
 import { EditUserInfoDto } from './dto/edit-user-info.dto';
 import { ApiUseBearer } from 'src/common/decorator/request-config.decorator';
@@ -28,7 +26,7 @@ import { PermissionLevel } from 'src/common/decorator/permission-level.decorator
 import { User } from './users.decorator';
 import * as usersSchema from './users.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UserRole } from 'src/types';
+import { User as UserInfo, UserRole } from 'src/types';
 
 //TODO: ajouter une nouvelle methode qui retourne les donnees publiques uniquement pour les users
 
@@ -105,31 +103,32 @@ export class UsersController {
     };
   }
 
-  @Get(':id')
+  @PermissionLevel(Object.values(UserRole))
+  @Get('me')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Récupérer un utilisateur par son ID' })
+  @ApiOperation({ summary: "Récupérer les donnees d'un utilisateur" })
   @ApiResponse({
     status: 200,
     description: 'Utilisateur récupéré avec succès',
-    schema: {
-      example: {
-        statusCode: 200,
-        message: 'User fetched successfully',
-        data: null,
-      },
-    },
   })
   @ApiResponse({
     status: 404,
     description: "L'utilisateur n'existe pas",
   })
-  async getUserById(@Param('id') id: string) {
-    const user = await this.UsersService.getUserById(id);
+  getUserById(@User() user: usersSchema.UserDocument) {
+    const userInfo: UserInfo = user.getUserPublicProfil();
+    if (!userInfo.profil) userInfo.profil = {};
+    userInfo.profil.adress = user.profil.adress;
+    userInfo.profil.firstname = user.profil.firstname;
+    userInfo.profil.lastname = user.profil.lastname;
+    userInfo.profil.phone = user.profil.phone;
 
     return {
       statusCode: HttpStatus.OK,
       message: 'User fetched successfully',
-      data: user as unknown as AuthPayload,
+      data: {
+        user: userInfo,
+      },
     };
   }
 
