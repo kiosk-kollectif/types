@@ -17,3 +17,12 @@ export enum UserRole {
   APPLICANT = 'deposant',
   USER = 'utilisateur',
 }
+
+export type User = UserPublicInfo & {
+  profil?: {
+    firstname?: string;
+    lastname?: string;
+    phone?: string;
+    adress?: string;
+  };
+};
