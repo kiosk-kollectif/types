@@ -111,17 +111,16 @@ export class UsersController {
     status: 200,
     description: 'Utilisateur récupéré avec succès',
   })
-  @ApiResponse({
-    status: 404,
-    description: "L'utilisateur n'existe pas",
-  })
   getUserById(@User() user: usersSchema.UserDocument) {
     const userInfo: UserInfo = user.getUserPublicProfil();
-    if (!userInfo.profil) userInfo.profil = {};
-    userInfo.profil.adress = user.profil.adress;
-    userInfo.profil.firstname = user.profil.firstname;
-    userInfo.profil.lastname = user.profil.lastname;
-    userInfo.profil.phone = user.profil.phone;
+    if (user.profil) {
+      if (!userInfo.profil) userInfo.profil = {};
+      if (user.profil.adress) userInfo.profil.adress = user.profil.adress;
+      if (user.profil.phone) userInfo.profil.phone = user.profil.phone;
+      if (user.profil.firstname)
+        userInfo.profil.firstname = user.profil.firstname;
+      if (user.profil.lastname) userInfo.profil.lastname = user.profil.lastname;
+    }
 
     return {
       statusCode: HttpStatus.OK,
@@ -210,6 +209,19 @@ export class UsersController {
     return {
       statusCode: HttpStatus.ACCEPTED,
       message: 'Password reset requested successfully',
+    };
+  }
+
+  @PermissionLevel(Object.values(UserRole))
+  @Post('me/stats')
+  @ApiOperation({ summary: "Recuperer les donnees de l'utilisateur" })
+  getUserStats(@User() user: usersSchema.UserDocument) {
+    const stats = this.UsersService.getUserStats(user);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'User stats fetched successfully',
+      data: { stats },
     };
   }
 }

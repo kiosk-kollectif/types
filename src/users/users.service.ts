@@ -25,6 +25,7 @@ import { sendPasswordResetMail } from 'src/common/utils/mailers';
 import { EditUserInfoDto } from './dto/edit-user-info.dto';
 import sharp from 'sharp';
 import { uploadFile } from 'src/common/utils/cloudinary';
+import { UserStats } from 'src/types';
 
 @Injectable()
 export class UsersService {
@@ -160,7 +161,7 @@ export class UsersService {
     if (userInfo.password) {
       user.passwordHash = hashPassword(userInfo['password']);
     }
-    //Appliquer des verifications sur l'email
+    //TODO Appliquer des verifications sur l'email
     // if (userInfo.email && userInfo.email !== user.email) {
     //   user.email = userInfo.email;
     //   user.verified = false;
@@ -171,5 +172,16 @@ export class UsersService {
 
     await user.save();
     return this.authService.signToken(user.getUserPublicProfil());
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getUserStats(user: UserDocument) {
+    //Faire la logique qui va faire sortir la statique de l'utilisateur
+    const stats: UserStats = {
+      rentalsTools: { length: 0, tools: undefined },
+      total_rentedd_tools: { length: 0 },
+    };
+
+    return stats;
   }
 }
