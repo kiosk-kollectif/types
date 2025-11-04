@@ -146,12 +146,12 @@ export class UsersController {
     @User() user: usersSchema.UserDocument,
     @Body() userInfo: EditUserInfoDto,
   ) {
-    const token = await this.UsersService.editUserInfo(user, userInfo);
+    const data = await this.UsersService.editUserInfo(user, userInfo);
 
     return {
       statusCode: HttpStatus.ACCEPTED,
       message: 'User info updated successfully',
-      data: { token },
+      data: data,
     };
   }
 

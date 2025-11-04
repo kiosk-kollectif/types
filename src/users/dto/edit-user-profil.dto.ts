@@ -29,10 +29,10 @@ export class EditUserProfilDto {
   })
   readonly phone?: string;
 
-  // @ApiProperty({
-  //   required: false,
-  //   example: 'https://google.com',
-  //   description: 'Lien de la photo de profil',
-  // })
-  // readonly picture: string;
+  @ApiProperty({
+    required: false,
+    description: "designe si une photo de profil doit etre retiree",
+    enum: ["removed"]
+  })
+  readonly picture?: string
 }

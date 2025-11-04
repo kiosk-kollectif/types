@@ -3,10 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class EditUserInfoDto {
   @ApiProperty({ required: false, description: "prenom de l'utilisateur" })
-  readonly firstname?: string;
-
-  @ApiProperty({ required: false, description: "nom de l'utilisateur" })
-  readonly lastname?: string;
+  readonly username?: string;
 
   @ApiProperty({ required: false, description: "email de l'utilisateur" })
   readonly email?: string;
@@ -16,11 +13,4 @@ export class EditUserInfoDto {
     description: "mot de passe de l'utilisateur",
   })
   readonly password?: string;
-
-  // @ApiProperty({
-  //   required: false,
-  //   description: "role de l'utilisateur",
-  //   enum: Role,
-  // })
-  // readonly role?: Role;
 }
