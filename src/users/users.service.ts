@@ -6,7 +6,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './users.schema';
+import {
+  User,
+  UserDocument,
+  UserProfil,
+  UserProfilDocument,
+  UserProfilSchema,
+} from './users.schema';
 import { Model, Types } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import {
@@ -33,8 +39,10 @@ export class UsersService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(ResetPasswordRequest.name)
     private readonly resetPasswordReqModel: Model<ResetPasswordRequestDocument>,
+    @InjectModel(UserProfil.name)
+    private readonly userProfilModel: Model<UserProfilDocument>,
     private readonly authService: AuthService,
-  ) {}
+  ) { }
 
   private async getLastPasswordResetRequest(id: string | Types.ObjectId) {
     return await this.resetPasswordReqModel
@@ -105,6 +113,8 @@ export class UsersService {
     userProfil: EditUserProfilDto,
     picture?: Express.Multer.File,
   ) {
+    if (!user.profil) user.profil = new this.userProfilModel({ _id: user._id });
+
     if (picture) {
       const thumbBuffer = await sharp(picture.buffer)
         .resize({ width: 200 })
@@ -125,13 +135,14 @@ export class UsersService {
     }
 
     if (userProfil.adress) user.profil.adress = userProfil.adress;
-
     //TODO: Amelioerer la logique de verification pour le numero de telephone
     if (userProfil.phone) user.profil.phone = userProfil.phone;
+    if (userProfil.firstname) user.profil.firstname = userProfil.firstname;
+    if (userProfil.lastname) user.profil.lastname = userProfil.lastname;
 
     await user.save();
 
-    return this.authService.signToken(user.getUserPublicProfil());
+    return { user: { ...user.getUserPublicProfil(), profil: user.profil }, token: this.authService.signToken(user.getUserPublicProfil())}
   }
 
   async requestPasswordReset(user: UserDocument) {

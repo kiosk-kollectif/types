@@ -3,6 +3,20 @@ import { ApiProperty } from '@nestjs/swagger';
 export class EditUserProfilDto {
   @ApiProperty({
     required: false,
+    example: 'John',
+    description: "Nom de l'utilisateur",
+  })
+  readonly lastname?: string;
+
+  @ApiProperty({
+    required: false,
+    example: 'Doe',
+    description: "Prenom de l'utilisateur",
+  })
+  readonly firstname?: string;
+
+  @ApiProperty({
+    required: false,
     example: 'Lome- kegue',
     description: "Addresse de l'utilisateur",
   })
