@@ -8,6 +8,7 @@ import {
   ResetPasswordRequest,
   ResetPasswordRequestSchema,
 } from './reset-password-request.schema';
+import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import {
       { name: UserProfil.name, schema: UserProfilSchema },
     ]),
     AuthModule,
+    InvalidesTokenModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

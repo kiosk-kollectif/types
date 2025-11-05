@@ -7,6 +7,7 @@ import {
   ToolsCategoriesSchema,
 } from './tools-categories.schema';
 import { AuthModule } from 'src/auth/auth.module';
+import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthModule } from 'src/auth/auth.module';
       { name: ToolsCategories.name, schema: ToolsCategoriesSchema },
     ]),
     AuthModule,
+    InvalidesTokenModule,
   ],
   controllers: [ToolsCategoriesController],
   providers: [ToolsCategoriesService],

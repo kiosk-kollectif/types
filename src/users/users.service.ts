@@ -11,7 +11,6 @@ import {
   UserDocument,
   UserProfil,
   UserProfilDocument,
-  UserProfilSchema,
 } from './users.schema';
 import { Model, Types } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -32,6 +31,7 @@ import { EditUserInfoDto } from './dto/edit-user-info.dto';
 import sharp from 'sharp';
 import { uploadFile } from 'src/common/utils/cloudinary';
 import { UserStats } from 'src/types';
+import { InvalidesTokenService } from 'src/invalides-token/invalides-token.service';
 
 @Injectable()
 export class UsersService {
@@ -42,7 +42,8 @@ export class UsersService {
     @InjectModel(UserProfil.name)
     private readonly userProfilModel: Model<UserProfilDocument>,
     private readonly authService: AuthService,
-  ) {}
+    private readonly invalidateTokenService: InvalidesTokenService
+  ) { }
 
   private async getLastPasswordResetRequest(id: string | Types.ObjectId) {
     return await this.resetPasswordReqModel
@@ -209,5 +210,10 @@ export class UsersService {
     };
 
     return stats;
+  }
+
+
+  async disconnectUser(token: string) {
+    return this.invalidateTokenService.add(token)
   }
 }

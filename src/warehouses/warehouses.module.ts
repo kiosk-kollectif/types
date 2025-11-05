@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { WhareHouse, WhareHouseSchema } from './warehouses.schema';
 import { WarehousesController } from './warehouses.controller';
 import { AuthModule } from 'src/auth/auth.module';
+import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthModule } from 'src/auth/auth.module';
       },
     ]),
     AuthModule,
+    InvalidesTokenModule,
   ],
   providers: [WarehousesService],
   controllers: [WarehousesController],

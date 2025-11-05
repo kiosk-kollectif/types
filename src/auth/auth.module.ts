@@ -9,6 +9,7 @@ import { PermissionLevelGuard } from './permission-level.guard';
 import { JWT_TOKEN_EXPIRATION } from 'src/common/utils/constants';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/users/users.schema';
+import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { User, UserSchema } from 'src/users/users.schema';
       },
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    InvalidesTokenModule,
   ],
   providers: [
     AuthService,

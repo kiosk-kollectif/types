@@ -7,6 +7,7 @@ import {
   ApplicationRequestSchema,
 } from './applicants.schema';
 import { AuthModule } from 'src/auth/auth.module';
+import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthModule } from 'src/auth/auth.module';
       { name: ApplicationRequest.name, schema: ApplicationRequestSchema },
     ]),
     AuthModule,
+    InvalidesTokenModule,
   ],
   controllers: [ApplicantsController],
   providers: [ApplicantsService],

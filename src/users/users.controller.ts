@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -27,13 +28,12 @@ import { User } from './users.decorator';
 import * as usersSchema from './users.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { User as UserInfo, UserRole } from 'src/types';
-
-//TODO: ajouter une nouvelle methode qui retourne les donnees publiques uniquement pour les users
+import { InvalidateToken } from 'src/common/decorator/invalidate-token.decorator';
 
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly UsersService: UsersService) {}
+  constructor(private readonly UsersService: UsersService) { }
 
   @HttpCode(201)
   @Post('register')
@@ -131,6 +131,7 @@ export class UsersController {
     };
   }
 
+  @InvalidateToken()
   @PermissionLevel(Object.values(UserRole))
   @Post('me/edit')
   @HttpCode(HttpStatus.ACCEPTED)
@@ -155,6 +156,7 @@ export class UsersController {
     };
   }
 
+  @InvalidateToken()
   @PermissionLevel(Object.values(UserRole))
   @Post('me/update-profil')
   @HttpCode(202)
@@ -210,7 +212,7 @@ export class UsersController {
   }
 
   @PermissionLevel(Object.values(UserRole))
-  @Post('me/stats')
+  @Get('me/stats')
   @ApiOperation({ summary: "Recuperer les donnees de l'utilisateur" })
   getUserStats(@User() user: usersSchema.UserDocument) {
     const stats = this.UsersService.getUserStats(user);
@@ -220,5 +222,16 @@ export class UsersController {
       message: 'User stats fetched successfully',
       data: { stats },
     };
+  }
+
+  @PermissionLevel(Object.values(UserRole))
+  @InvalidateToken()
+  @Post('me/logout')
+  async disconnectUser() {
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'User Disconnected'
+    }
   }
 }

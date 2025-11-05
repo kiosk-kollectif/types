@@ -7,6 +7,7 @@ import {
   VerificationCodesSchema,
 } from './verification-codes.schema';
 import { AuthModule } from 'src/auth/auth.module';
+import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthModule } from 'src/auth/auth.module';
       { name: VerificationCode.name, schema: VerificationCodesSchema },
     ]),
     AuthModule,
+    InvalidesTokenModule,
   ],
   controllers: [VerificationCodesController],
   providers: [VerificationCodesService],
