@@ -18,9 +18,9 @@ import {
 } from '@nestjs/swagger';
 import { ApplicantsService } from './applicants.service';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
-import { UserDocument } from 'src/users/users.schema';
-import { ApplicantRequestStatus } from 'src/common/enums/applicant-request-status.enum';
-import { UserRole } from 'src/types';
+import * as usersSchema from 'src/users/users.schema';
+import { ApplicantRequestStatus, UserRole } from 'src/types';
+import { User } from 'src/users/users.decorator';
 
 @ApiTags('Gerer les requetes des deposant')
 @Controller('applicants')
@@ -31,16 +31,33 @@ export class ApplicantsController {
   @Post('requests')
   @ApiOperation({ summary: 'Envoyer une requete' })
   @ApiCreatedResponse({ description: 'Requete envoyée' })
-  async addApplicantRequest(@Req() req: Request & { user: UserDocument }) {
-    const user: UserDocument = req.user;
+  async addApplicantRequest(
+    @Req() req: Request & { user: usersSchema.UserDocument },
+  ) {
+    const user: usersSchema.UserDocument = req.user;
 
-    const request = await this.applicantService.postRequest(user);
+    const status = await this.applicantService.postRequest(user);
 
     return {
       StatusCode: HttpStatus.CREATED,
       message: 'Request sended',
       data: {
-        request,
+        status,
+      },
+    };
+  }
+
+  @PermissionLevel([UserRole.USER, UserRole.APPLICANT])
+  @Get('request-status')
+  @ApiOperation({ summary: "Recuperer le status d'une requete" })
+  @ApiOkResponse({ description: 'Reponse a la requete' })
+  async getApplicantRequestStatus(@User() user: usersSchema.UserDocument) {
+    const status = await this.applicantService.getUserRequestStatus(user);
+    return {
+      StatusCode: HttpStatus.OK,
+      message: 'Here you are',
+      data: {
+        status,
       },
     };
   }

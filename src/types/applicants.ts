@@ -1,5 +1,5 @@
 export enum ApplicantRequestStatus {
-    PENDING = 'en cours',
-    ACCEPTED = 'acceptée',
-    REFUSED = 'refusée',
+  PENDING = 'en cours',
+  ACCEPTED = 'acceptée',
+  REFUSED = 'refusée',
 }

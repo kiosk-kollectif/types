@@ -11,7 +11,7 @@ import {
 } from './applicants.schema';
 import { Model } from 'mongoose';
 import { UserDocument } from 'src/users/users.schema';
-import { ApplicantRequestStatus } from 'src/common/enums/applicant-request-status.enum';
+import { ApplicantRequestStatus } from 'src/types';
 
 @Injectable()
 export class ApplicantsService {
@@ -31,7 +31,12 @@ export class ApplicantsService {
   }
 
   async postRequest(user: UserDocument) {
-    const exists = await this.requestsModel.findOne({ user_id: user._id });
+    const exists = await this.requestsModel.findOne({
+      user_id: user._id,
+      status: {
+        $in: [ApplicantRequestStatus.ACCEPTED, ApplicantRequestStatus.PENDING],
+      },
+    });
     if (exists) {
       throw new ConflictException('Request already exists');
     }
@@ -40,7 +45,7 @@ export class ApplicantsService {
       user_id: user._id,
     });
 
-    return request;
+    return request.status;
   }
 
   async getRequests(status?: ApplicantRequestStatus) {
@@ -58,5 +63,14 @@ export class ApplicantsService {
     await request.save();
 
     return request;
+  }
+
+  async getUserRequestStatus(user: UserDocument) {
+    const request = await this.requestsModel.findOne({
+      user_id: user._id,
+      status: { $nin: [ApplicantRequestStatus.REFUSED] },
+    });
+
+    return request ? request.status : null;
   }
 }

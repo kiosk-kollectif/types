@@ -33,7 +33,7 @@ import { User as UserInfo, UserRole } from 'src/types';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly UsersService: UsersService) { }
+  constructor(private readonly UsersService: UsersService) {}
 
   @HttpCode(201)
   @Post('register')
@@ -173,11 +173,8 @@ export class UsersController {
     @Body() userProfil: EditUserProfilDto,
     @UploadedFile() picture?: Express.Multer.File,
   ) {
-    const { token, user: newUserData } = await this.UsersService.editUserProfile(
-      user,
-      userProfil,
-      picture,
-    );
+    const { token, user: newUserData } =
+      await this.UsersService.editUserProfile(user, userProfil, picture);
 
     return {
       statusCode: HttpStatus.ACCEPTED,

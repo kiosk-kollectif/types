@@ -42,7 +42,7 @@ export class UsersService {
     @InjectModel(UserProfil.name)
     private readonly userProfilModel: Model<UserProfilDocument>,
     private readonly authService: AuthService,
-  ) { }
+  ) {}
 
   private async getLastPasswordResetRequest(id: string | Types.ObjectId) {
     return await this.resetPasswordReqModel
@@ -115,7 +115,7 @@ export class UsersService {
   ) {
     if (!user.profil) user.profil = new this.userProfilModel({ _id: user._id });
 
-    console.log(userProfil.picture)
+    console.log(userProfil.picture);
 
     if (picture) {
       const thumbBuffer = await sharp(picture.buffer)
@@ -134,10 +134,10 @@ export class UsersService {
 
       user.profil.picture = profileUrl;
       user.profil.thumbnail = thumburl;
-    } else if (userProfil.picture == "removed") {
-      console.log("removing Picture");
-      if (user.profil.picture) user.profil.picture = undefined
-      if (user.profil.thumbnail) user.profil.thumbnail = undefined
+    } else if (userProfil.picture == 'removed') {
+      console.log('removing Picture');
+      if (user.profil.picture) user.profil.picture = undefined;
+      if (user.profil.thumbnail) user.profil.thumbnail = undefined;
     }
 
     if (userProfil.adress) user.profil.adress = userProfil.adress;
@@ -148,7 +148,10 @@ export class UsersService {
 
     await user.save();
 
-    return { user: { ...user.getUserPublicProfil(), profil: user.profil }, token: this.authService.signToken(user.getUserPublicProfil()) }
+    return {
+      user: { ...user.getUserPublicProfil(), profil: user.profil },
+      token: this.authService.signToken(user.getUserPublicProfil()),
+    };
   }
 
   async requestPasswordReset(user: UserDocument) {
@@ -174,22 +177,27 @@ export class UsersService {
   }
 
   async editUserInfo(user: UserDocument, userInfo: EditUserInfoDto) {
-
     if (userInfo.password) {
       user.passwordHash = hashPassword(userInfo['password']);
     }
 
-    if (userInfo.email && userInfo.email.toLowerCase() !== user.email.toLowerCase()) {
-      user.email = userInfo.email
+    if (
+      userInfo.email &&
+      userInfo.email.toLowerCase() !== user.email.toLowerCase()
+    ) {
+      user.email = userInfo.email;
       user.verified = false;
     }
 
     if (userInfo.username) {
-      user.username = userInfo.username
+      user.username = userInfo.username;
     }
 
     await user.save();
-    return { user: { ...user.getUserPublicProfil(), profil: user.profil }, token: this.authService.signToken(user.getUserPublicProfil()) }
+    return {
+      user: { ...user.getUserPublicProfil(), profil: user.profil },
+      token: this.authService.signToken(user.getUserPublicProfil()),
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -31,8 +31,8 @@ export class EditUserProfilDto {
 
   @ApiProperty({
     required: false,
-    description: "designe si une photo de profil doit etre retiree",
-    enum: ["removed"]
+    description: 'designe si une photo de profil doit etre retiree',
+    enum: ['removed'],
   })
-  readonly picture?: string
+  readonly picture?: string;
 }
