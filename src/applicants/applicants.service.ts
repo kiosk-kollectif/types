@@ -12,13 +12,16 @@ import {
 import { Model } from 'mongoose';
 import { UserDocument } from 'src/users/users.schema';
 import { ApplicantRequestStatus } from 'src/types';
+import { Tool, ToolDocument } from 'src/tools/tools.schema';
+import { Tool as ToolInfo } from "src/types"
 
 @Injectable()
 export class ApplicantsService {
   constructor(
     @InjectModel(ApplicationRequest.name)
     private readonly requestsModel: Model<ApplicationRequestDocument>,
-  ) {}
+    @InjectModel(Tool.name) private readonly toolModel: Model<ToolDocument>
+  ) { }
 
   async getRequestById(id: string) {
     try {
@@ -72,5 +75,13 @@ export class ApplicantsService {
     });
 
     return request ? request.status : null;
+  }
+
+  async getApplicantTools(user: UserDocument): Promise<ToolInfo[]> {
+    const tools = await this.toolModel.find({ owner_id: user.id }).populate("owner_id")
+
+    return tools.map(tool => {
+      return { ...tool.getPublicInfo(), status: tool.status }
+    })
   }
 }

@@ -25,7 +25,7 @@ import { User } from 'src/users/users.decorator';
 @ApiTags('Gerer les requetes des deposant')
 @Controller('applicants')
 export class ApplicantsController {
-  constructor(private readonly applicantService: ApplicantsService) {}
+  constructor(private readonly applicantService: ApplicantsService) { }
 
   @PermissionLevel([UserRole.USER])
   @Post('requests')
@@ -96,5 +96,23 @@ export class ApplicantsController {
       message: 'Request updated',
       data: { request },
     };
+  }
+
+
+  //Requete d'un applicant  pour ses donnees
+  @Get('me/tools')
+  @PermissionLevel([UserRole.APPLICANT])
+  @ApiOperation({ summary: "Recuperer les outils d'un deposant" })
+  async getApplicantsTools(@User() user: usersSchema.UserDocument) {
+    const tools = await this.applicantService.getApplicantTools(user);
+
+    return {
+      StatusCode: HttpStatus.OK,
+      message: "Here you are",
+      data: {
+        tools,
+        length: tools.length
+      }
+    }
   }
 }
