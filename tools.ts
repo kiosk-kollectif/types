@@ -17,3 +17,5 @@ export type ToolPublicInfo = {
   slug: string;
   owner: UserPublicInfo;
 };
+
+export type Tool = ToolPublicInfo & { status: ToolRequestStatus }
