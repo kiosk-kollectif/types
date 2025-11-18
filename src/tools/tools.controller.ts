@@ -18,6 +18,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { ToolsService } from './tools.service';
@@ -114,7 +115,14 @@ export class ToolsController {
   }
 
   @Post(':id/update')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @PermissionLevel([UserRole.ADMIN, UserRole.MANAGER, UserRole.APPLICANT])
+  @ApiOperation({ summary: 'Editer un outils' })
   @UseInterceptors(FilesInterceptor('images', 5))
+  @ApiCreatedResponse({
+    description: "L'outils a ete modifier",
+  })
+  @ApiUnauthorizedResponse({ description: 'requete non permis' })
   async editTool(
     @Param('id') id: string,
     @UploadedFiles() images: Express.Multer.File[],
