@@ -7,6 +7,7 @@ export enum ToolRequestStatus {
 }
 
 export type ToolPublicInfo = {
+  id: string;
   name: string;
   description: string;
   thumbnail: string;
@@ -18,4 +19,8 @@ export type ToolPublicInfo = {
   owner: UserPublicInfo;
 };
 
-export type Tool = ToolPublicInfo & { status: ToolRequestStatus, price: number };
+export type Tool = Omit<ToolPublicInfo, 'categories'> & {
+  status: ToolRequestStatus;
+  price: number;
+  categories: { name: string; id: string }[];
+};
