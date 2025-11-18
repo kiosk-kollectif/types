@@ -18,4 +18,4 @@ export type ToolPublicInfo = {
   owner: UserPublicInfo;
 };
 
-export type Tool = ToolPublicInfo & { status: ToolRequestStatus }
+export type Tool = ToolPublicInfo & { status: ToolRequestStatus, price: number };
