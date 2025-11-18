@@ -25,7 +25,7 @@ import { User } from 'src/users/users.decorator';
 @ApiTags('Gerer les requetes des deposant')
 @Controller('applicants')
 export class ApplicantsController {
-  constructor(private readonly applicantService: ApplicantsService) { }
+  constructor(private readonly applicantService: ApplicantsService) {}
 
   @PermissionLevel([UserRole.USER])
   @Post('requests')
@@ -98,7 +98,6 @@ export class ApplicantsController {
     };
   }
 
-
   //Requete d'un applicant  pour ses donnees
   @Get('me/tools')
   @PermissionLevel([UserRole.APPLICANT])
@@ -108,11 +107,11 @@ export class ApplicantsController {
 
     return {
       StatusCode: HttpStatus.OK,
-      message: "Here you are",
+      message: 'Here you are',
       data: {
         tools,
-        length: tools.length
-      }
-    }
+        length: tools.length,
+      },
+    };
   }
 }

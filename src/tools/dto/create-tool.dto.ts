@@ -8,16 +8,16 @@ export class CreateToolDto {
   owner_id?: string;
 
   @ApiProperty()
-  category: string;
+  categories: string[];
 
   @ApiProperty({ required: false })
   description?: string;
 
-  @ApiProperty()
-  condition: string;
-
   @ApiProperty({ required: false })
   price?: number;
+
+  @ApiProperty({ required: false })
+  dayprice?: number;
 
   @ApiProperty({ required: false })
   location: string;

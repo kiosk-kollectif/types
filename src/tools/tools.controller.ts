@@ -68,14 +68,14 @@ export class ToolsController {
   }
 
   @Post('/')
-  @PermissionLevel(Object.keys(UserRole))
+  @PermissionLevel([UserRole.ADMIN, UserRole.MANAGER, UserRole.APPLICANT])
   @ApiOperation({ summary: 'Creer un nouvel outils' })
   @ApiCreatedResponse({ description: "l'outils a ete cree" })
   @ApiBadRequestResponse({ description: 'Parametres manquants' })
   @ApiNotFoundResponse({
     description: "l'utilisateur n'existe pas ou la categorie est inexistante",
   })
-  @UseInterceptors(FilesInterceptor('images'))
+  @UseInterceptors(FilesInterceptor('images', 5))
   async createTool(
     @Body() createToolDto: CreateToolDto,
     @UploadedFiles() images: Express.Multer.File[],
@@ -90,7 +90,7 @@ export class ToolsController {
     return {
       StatusCode: HttpStatus.CREATED,
       Message: 'Tool created successfully',
-      Data: { tool },
+      data: { tool },
     };
   }
 
@@ -110,6 +110,28 @@ export class ToolsController {
       StatusCode: HttpStatus.ACCEPTED,
       Message: 'Tool deleted successfully',
       data: { deleted },
+    };
+  }
+
+  @Post(':id/update')
+  @UseInterceptors(FilesInterceptor('images', 5))
+  async editTool(
+    @Param('id') id: string,
+    @UploadedFiles() images: Express.Multer.File[],
+    @Body() createToolDto: Partial<CreateToolDto> & { images?: string[] },
+    @User() user: usersSchema.UserDocument,
+  ) {
+    const tool = await this.toolsService.updateTool(
+      id,
+      createToolDto,
+      user,
+      images,
+    );
+
+    return {
+      StatusCode: HttpStatus.ACCEPTED,
+      message: 'Tool updated successfully',
+      data: { tool },
     };
   }
 

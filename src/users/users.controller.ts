@@ -33,7 +33,7 @@ import { InvalidateToken } from 'src/common/decorator/invalidate-token.decorator
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly UsersService: UsersService) { }
+  constructor(private readonly UsersService: UsersService) {}
 
   @HttpCode(201)
   @Post('register')
@@ -228,10 +228,9 @@ export class UsersController {
   @InvalidateToken()
   @Post('me/logout')
   async disconnectUser() {
-
     return {
       statusCode: HttpStatus.CREATED,
-      message: 'User Disconnected'
-    }
+      message: 'User Disconnected',
+    };
   }
 }

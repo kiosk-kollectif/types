@@ -42,8 +42,8 @@ export class UsersService {
     @InjectModel(UserProfil.name)
     private readonly userProfilModel: Model<UserProfilDocument>,
     private readonly authService: AuthService,
-    private readonly invalidateTokenService: InvalidesTokenService
-  ) { }
+    private readonly invalidateTokenService: InvalidesTokenService,
+  ) {}
 
   private async getLastPasswordResetRequest(id: string | Types.ObjectId) {
     return await this.resetPasswordReqModel
@@ -212,8 +212,7 @@ export class UsersService {
     return stats;
   }
 
-
   async disconnectUser(token: string) {
-    return this.invalidateTokenService.add(token)
+    return this.invalidateTokenService.add(token);
   }
 }

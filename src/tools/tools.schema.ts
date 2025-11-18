@@ -1,12 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { slugify } from 'src/common/utils/slugify';
 import { ToolsCategories } from 'src/tools-categories/tools-categories.schema';
 import { ToolPublicInfo, ToolRequestStatus, UserPublicInfo } from 'src/types';
 import { getUserPublicProfil, User } from 'src/users/users.schema';
 import { WhareHouse } from 'src/warehouses/warehouses.schema';
+import { Tool as ToolInfo } from 'src/types';
 
 export type ToolDocument = Tool &
-  Document & { getPublicInfo: () => ToolPublicInfo };
+  Document & { getPublicInfo: () => ToolPublicInfo; getInfo: () => ToolInfo };
 
 @Schema({ timestamps: true, versionKey: false })
 export class Tool {
@@ -33,6 +35,9 @@ export class Tool {
   images: string[];
 
   @Prop({ required: false })
+  price: number;
+
+  @Prop({ required: false })
   dayprice: number;
 
   @Prop({ ref: WhareHouse.name })
@@ -41,11 +46,20 @@ export class Tool {
   @Prop({ enum: ToolRequestStatus, default: ToolRequestStatus.PENDING })
   status: ToolRequestStatus;
 
-  @Prop({ required: true })
+  @Prop({ unique: true })
   slug: string;
+
+  _id: Types.ObjectId;
 }
 
 export const ToolDocumentSchema = SchemaFactory.createForClass(Tool);
+
+ToolDocumentSchema.pre('save', function (next) {
+  if (this.isModified('name')) {
+    this.slug = slugify(this.name);
+  }
+  next();
+});
 
 function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
   const categories: string[] = [];
@@ -82,6 +96,7 @@ function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
   }
 
   return {
+    id: this._id.toString(),
     name: this.name,
     description: this.description,
     thumbnail: this.thumbnail,
@@ -94,4 +109,31 @@ function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
   };
 }
 
+function getToolInfo(this: ToolDocument): ToolInfo {
+  const categories: { name: string; id: string }[] = [];
+
+  if (this.categories && Array.isArray(this.categories)) {
+    for (const categorie of this.categories) {
+      if (
+        typeof categorie == 'object' &&
+        'name' in categorie &&
+        '_id' in categorie &&
+        typeof categorie.name == 'string' &&
+        (typeof categorie._id == 'string' ||
+          categorie._id instanceof Types.ObjectId)
+      ) {
+        categories.push({ name: categorie.name, id: String(categorie._id) });
+      }
+    }
+  }
+
+  return {
+    ...this.getPublicInfo(),
+    price: this.price,
+    status: this.status,
+    categories,
+  };
+}
+
 ToolDocumentSchema.methods.getPublicInfo = getToolsPublicInfo;
+ToolDocumentSchema.methods.getInfo = getToolInfo;

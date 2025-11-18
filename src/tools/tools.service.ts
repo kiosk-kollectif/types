@@ -12,7 +12,7 @@ import { uploadFile } from 'src/common/utils/cloudinary';
 import sharp from 'sharp';
 import { ToolsCategoriesService } from 'src/tools-categories/tools-categories.service';
 import { UserDocument } from 'src/users/users.schema';
-import { ToolRequestStatus, UserRole } from '../types';
+import { ToolRequestStatus, UserRole, type Tool as ToolInfo } from '../types';
 
 @Injectable()
 export class ToolsService {
@@ -74,10 +74,13 @@ export class ToolsService {
     user: UserDocument,
     tool: CreateToolDto,
     images: Express.Multer.File[],
-  ) {
+  ): Promise<ToolInfo> {
+    if (!tool.categories || !tool.name)
+      throw new BadRequestException('Missing somes required fields');
+
     //Check bro's permission Level
     if (user.role == UserRole.APPLICANT) {
-      if (tool.owner_id || tool.price || tool.location || tool.status)
+      if (tool.owner_id || tool.dayprice || tool.location || tool.status)
         throw new UnauthorizedException(
           "You don't have permission edit some fields",
         );
@@ -86,20 +89,13 @@ export class ToolsService {
 
       //Case Admin adding a new tool for applicant
     } else {
-      if (
-        !tool.name ||
-        !tool.owner_id ||
-        !tool.category ||
-        !tool.condition ||
-        !tool.location ||
-        !tool.price
-      )
+      if (!tool.owner_id || !tool.location || !tool.dayprice)
         //Check if missing some required params
         throw new BadRequestException('missing some required params');
     }
 
     //check if categorie exist
-    await this.toolsCategorieServ.getCategoryById(tool.category);
+    await this.toolsCategorieServ.getCategoriesById(tool.categories);
 
     if (!images || images.length === 0)
       throw new BadRequestException('at latest one image required');
@@ -126,7 +122,9 @@ export class ToolsService {
       images: imagesLinks,
     });
 
-    return newTool;
+    await newTool.populate('categories');
+
+    return newTool.getInfo();
   }
 
   async getToolById(id: string) {
@@ -150,5 +148,70 @@ export class ToolsService {
 
     if (!tool) throw new NotFoundException('tool not found');
     return tool.getPublicInfo();
+  }
+
+  async updateTool(
+    id: string,
+    tool: Partial<CreateToolDto> & { images?: string[] },
+    user: UserDocument,
+    images?: Express.Multer.File[],
+  ): Promise<ToolInfo> {
+    //Check bro's permission Level
+    if (user.role == UserRole.APPLICANT) {
+      if (tool.owner_id || tool.dayprice || tool.location || tool.status)
+        throw new UnauthorizedException(
+          "You don't have permission edit some fields",
+        );
+    }
+
+    const toolExist = await this.toolModel.findById(id);
+    if (!toolExist || toolExist.owner_id !== user._id)
+      throw new UnauthorizedException('You are not the owner of this tool');
+
+    if (tool.name) toolExist.name = tool.name;
+    if (tool.description) toolExist.description = tool.description;
+    if (tool.dayprice) toolExist.dayprice = tool.dayprice;
+    if (tool.owner_id) toolExist.owner_id = new Types.ObjectId(tool.owner_id);
+    if (tool.location) toolExist.location = new Types.ObjectId(tool.location);
+
+    if (tool.categories) {
+      await this.toolsCategorieServ.getCategoriesById(tool.categories);
+      toolExist.categories = tool.categories.map(
+        (cat) => new Types.ObjectId(cat),
+      );
+    }
+
+    if (tool.images) {
+      if (!tool.images.includes(toolExist.images[0])) toolExist.thumbnail = '';
+      toolExist.images = tool.images;
+    }
+
+    if (images && images.length > 0) {
+      const imagesLinks = await Promise.all(
+        images.map(async (image) => await uploadFile(image), 'tools'),
+      );
+      toolExist.images = [...toolExist.images, ...imagesLinks];
+    }
+
+    // Cas ou le thumbnail a ete supprimer
+    if (toolExist.thumbnail === '') {
+      const thumbBuffer = await sharp(toolExist.images[0])
+        .resize(200)
+        .jpeg()
+        .toBuffer();
+
+      const thumbnail = await uploadFile(
+        {
+          buffer: thumbBuffer,
+        } as Express.Multer.File,
+        'thumbnail',
+      );
+      toolExist.thumbnail = thumbnail;
+    }
+
+    await toolExist.save();
+    await toolExist.populate('categories');
+
+    return toolExist.getInfo();
   }
 }

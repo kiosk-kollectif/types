@@ -14,7 +14,7 @@ import { Tool, ToolDocumentSchema } from 'src/tools/tools.schema';
   imports: [
     MongooseModule.forFeature([
       { name: ApplicationRequest.name, schema: ApplicationRequestSchema },
-      { name: Tool.name, schema: ToolDocumentSchema }
+      { name: Tool.name, schema: ToolDocumentSchema },
     ]),
     AuthModule,
     InvalidesTokenModule,
@@ -22,4 +22,4 @@ import { Tool, ToolDocumentSchema } from 'src/tools/tools.schema';
   controllers: [ApplicantsController],
   providers: [ApplicantsService],
 })
-export class ApplicantsModule { }
+export class ApplicantsModule {}
