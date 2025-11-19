@@ -26,6 +26,7 @@ import { PermissionLevel } from 'src/common/decorator/permission-level.decorator
 import { User } from 'src/users/users.decorator';
 import * as usersSchema from 'src/users/users.schema';
 import { ToolRequestStatus, UserRole } from 'src/types';
+import { UpdateToolDto } from './dto/udate-tool-dto';
 
 @ApiTags('Tools')
 @Controller('tools')
@@ -126,7 +127,7 @@ export class ToolsController {
   async editTool(
     @Param('id') id: string,
     @UploadedFiles() images: Express.Multer.File[],
-    @Body() createToolDto: Partial<CreateToolDto> & { images?: string[] },
+    @Body() createToolDto: UpdateToolDto,
     @User() user: usersSchema.UserDocument,
   ) {
     const tool = await this.toolsService.updateTool(

@@ -13,13 +13,14 @@ import sharp from 'sharp';
 import { ToolsCategoriesService } from 'src/tools-categories/tools-categories.service';
 import { UserDocument } from 'src/users/users.schema';
 import { ToolRequestStatus, UserRole, type Tool as ToolInfo } from '../types';
+import { sameObjectId } from 'src/common/utils/sameObjectId';
 
 @Injectable()
 export class ToolsService {
   constructor(
     @InjectModel(Tool.name) private readonly toolModel: Model<ToolDocument>,
     private readonly toolsCategorieServ: ToolsCategoriesService,
-  ) {}
+  ) { }
 
   async getTools(
     query?: string,
@@ -165,7 +166,8 @@ export class ToolsService {
     }
 
     const toolExist = await this.toolModel.findById(id);
-    if (!toolExist || toolExist.owner_id !== user._id)
+    if (!toolExist) throw new NotFoundException('Your item is not found');
+    if (!sameObjectId(toolExist.owner_id, user._id))
       throw new UnauthorizedException('You are not the owner of this tool');
 
     if (tool.name) toolExist.name = tool.name;
@@ -184,6 +186,9 @@ export class ToolsService {
     if (tool.images) {
       if (!tool.images.includes(toolExist.images[0])) toolExist.thumbnail = '';
       toolExist.images = tool.images;
+    } else if (!tool.images && images) {
+      toolExist.thumbnail = '';
+      toolExist.images = [];
     }
 
     if (images && images.length > 0) {
@@ -195,18 +200,23 @@ export class ToolsService {
 
     // Cas ou le thumbnail a ete supprimer
     if (toolExist.thumbnail === '') {
-      const thumbBuffer = await sharp(toolExist.images[0])
-        .resize(200)
-        .jpeg()
-        .toBuffer();
+      if (typeof toolExist.images[0] == 'string') {
+        // TODO: trouver un moyen de compresser l'image
+        toolExist.thumbnail = toolExist.images[0];
+      } else {
+        const thumbBuffer = await sharp(images![0].buffer)
+          .resize(200)
+          .jpeg()
+          .toBuffer();
 
-      const thumbnail = await uploadFile(
-        {
-          buffer: thumbBuffer,
-        } as Express.Multer.File,
-        'thumbnail',
-      );
-      toolExist.thumbnail = thumbnail;
+        const thumbnail = await uploadFile(
+          {
+            buffer: thumbBuffer,
+          } as Express.Multer.File,
+          'thumbnail',
+        );
+        toolExist.thumbnail = thumbnail;
+      } ``
     }
 
     await toolExist.save();

@@ -1,4 +1,0 @@
-{
-  "conventionalCommits.scopes": ["tools api request"],
-  "autoBarrel.files.keepExtensionOnExport": false
-}

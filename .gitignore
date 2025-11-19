@@ -62,3 +62,4 @@ request.http
 requests
 openapi.json
 .vercel
+.vscode
