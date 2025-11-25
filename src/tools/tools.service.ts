@@ -20,7 +20,7 @@ export class ToolsService {
   constructor(
     @InjectModel(Tool.name) private readonly toolModel: Model<ToolDocument>,
     private readonly toolsCategorieServ: ToolsCategoriesService,
-  ) {}
+  ) { }
 
   async getTools(
     query?: string,
@@ -217,7 +217,6 @@ export class ToolsService {
         );
         toolExist.thumbnail = thumbnail;
       }
-      ``;
     }
 
     await toolExist.save();
