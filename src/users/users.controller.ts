@@ -29,6 +29,7 @@ import * as usersSchema from './users.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { User as UserInfo, UserRole } from 'src/types';
 import { InvalidateToken } from 'src/common/decorator/invalidate-token.decorator';
+import type { ApiGlobalResponse } from 'src/common/types';
 
 @ApiTags('Users')
 @Controller('users')
@@ -221,6 +222,21 @@ export class UsersController {
       statusCode: HttpStatus.OK,
       message: 'User stats fetched successfully',
       data: { stats },
+    };
+  }
+
+  @Post('me/refresh-token')
+  @InvalidateToken()
+  @PermissionLevel(Object.values(UserRole))
+  refreshUserToken(@User() user): ApiGlobalResponse<{ token: string }> {
+    const token = this.UsersService.generateUserToken(user);
+
+    return {
+      StatusCode: HttpStatus.ACCEPTED,
+      message: 'New token provided',
+      data: {
+        token: token,
+      },
     };
   }
 

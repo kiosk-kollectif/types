@@ -212,6 +212,10 @@ export class UsersService {
     return stats;
   }
 
+  generateUserToken(user: UserDocument) {
+    return this.authService.signToken(user.getUserPublicProfil());
+  }
+
   async disconnectUser(token: string) {
     return this.invalidateTokenService.add(token);
   }
