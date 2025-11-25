@@ -25,13 +25,15 @@ import { ToolsService } from './tools.service';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
 import { User } from 'src/users/users.decorator';
 import * as usersSchema from 'src/users/users.schema';
-import { ToolRequestStatus, UserRole } from 'src/types';
+import { ToolPublicInfo, ToolRequestStatus, UserRole } from 'src/types';
 import { UpdateToolDto } from './dto/udate-tool-dto';
+import { GetToolByIds } from './dto/get-tools-by-ids.dto';
+import { ApiGlobalResponse } from 'src/common/types';
 
 @ApiTags('Tools')
 @Controller('tools')
 export class ToolsController {
-  constructor(private readonly toolsService: ToolsService) {}
+  constructor(private readonly toolsService: ToolsService) { }
 
   @Get('/')
   @ApiOperation({ summary: 'Recuperer la liste des outils acceptes' })
@@ -96,6 +98,18 @@ export class ToolsController {
     };
   }
 
+
+  @Post('/get-by-ids')
+  async getToolsByIds(@Body() ids: GetToolByIds): Promise<ApiGlobalResponse<{ tools: ToolPublicInfo[]; }>> {
+    const tools = await this.toolsService.getToolsByIds(ids);
+
+    return {
+      StatusCode: HttpStatus.OK,
+      message: 'there you are',
+      data: { tools }
+    }
+  }
+
   @Post(':id/delete')
   @HttpCode(HttpStatus.ACCEPTED)
   @PermissionLevel(Object.keys(UserRole))
@@ -110,7 +124,7 @@ export class ToolsController {
 
     return {
       StatusCode: HttpStatus.ACCEPTED,
-      Message: 'Tool deleted successfully',
+      message: 'Tool deleted successfully',
       data: { deleted },
     };
   }

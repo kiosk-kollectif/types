@@ -14,6 +14,7 @@ import { ToolsCategoriesService } from 'src/tools-categories/tools-categories.se
 import { UserDocument } from 'src/users/users.schema';
 import { ToolRequestStatus, UserRole, type Tool as ToolInfo } from '../types';
 import { sameObjectId } from 'src/common/utils/sameObjectId';
+import { GetToolByIds } from './dto/get-tools-by-ids.dto';
 
 @Injectable()
 export class ToolsService {
@@ -132,6 +133,14 @@ export class ToolsService {
     const exist = await this.toolModel.findById(id);
     if (!exist) throw new NotFoundException('tool not found');
     return exist;
+  }
+
+  async getToolsByIds(ids: GetToolByIds) {
+    if (!ids?.ids) throw new BadRequestException("Missing paramd");
+
+    const result = await this.toolModel.find({ _id: { $in: ids.ids } })
+    await Promise.all(result.map(r => r.populate("owner_id")))
+    return result.map(r => r.getPublicInfo())
   }
 
   async deleteItem(id: string) {

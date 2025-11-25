@@ -6,6 +6,7 @@ import { ToolPublicInfo, ToolRequestStatus, UserPublicInfo } from 'src/types';
 import { getUserPublicProfil, User } from 'src/users/users.schema';
 import { WhareHouse } from 'src/warehouses/warehouses.schema';
 import { Tool as ToolInfo } from 'src/types';
+import { InternalServerErrorException } from '@nestjs/common';
 
 export type ToolDocument = Tool &
   Document & { getPublicInfo: () => ToolPublicInfo; getInfo: () => ToolInfo };
@@ -92,7 +93,11 @@ function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
 
   if (this.owner_id && typeof this.owner_id == 'object') {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    owner = getUserPublicProfil.call(this.owner_id);
+    try {
+      owner = getUserPublicProfil.call(this.owner_id);
+    } catch (error) {
+      throw new InternalServerErrorException("Sound like yo didn't populate owner")
+    }
   }
 
   return {
