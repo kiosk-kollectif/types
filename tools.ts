@@ -17,6 +17,7 @@ export type ToolPublicInfo = {
   location?: string;
   slug: string;
   owner: UserPublicInfo;
+  reservations: string[][];
 };
 
 export type Tool = Omit<ToolPublicInfo, 'categories'> & {
