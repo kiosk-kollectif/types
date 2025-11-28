@@ -59,7 +59,9 @@ export class User {
 export const UserSchema = SchemaFactory.createForClass(User);
 
 export function getUserPublicProfil(this: UserDocument): UserPublicInfo {
-  const memberSince = this.createdAt.toLocaleDateString('fr-FR', {
+  const memberSince = (
+    this.createdAt instanceof Date ? this.createdAt : new Date(this.createdAt)
+  ).toLocaleDateString('fr-FR', {
     month: 'long',
     year: 'numeric',
   });

@@ -14,6 +14,7 @@ import { ToolsModule } from './tools/tools.module';
 import { ApplicantsModule } from './applicants/applicants.module';
 import { InvalidesTokenModule } from './invalides-token/invalides-token.module';
 import { InvalideTokenInterceptor } from 'src/invalides-token/invalides-token.interceptor';
+import { ReservationsModule } from './reservations/reservations.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { InvalideTokenInterceptor } from 'src/invalides-token/invalides-token.in
     ToolsModule,
     ApplicantsModule,
     InvalidesTokenModule,
+    ReservationsModule,
   ],
   controllers: [AppController],
   providers: [

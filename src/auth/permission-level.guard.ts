@@ -39,8 +39,7 @@ export class PermissionLevelGuard implements CanActivate {
       const user = await this.userModel.findById(playload.id);
       if (!user) return false;
       existsUser = user;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch (_) {
       return false;
     }
 

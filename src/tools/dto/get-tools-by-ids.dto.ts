@@ -1,6 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class GetToolByIds {
-    @ApiProperty({ required: true })
-    ids: string[];
+  @ApiProperty({ required: true })
+  ids: string[];
 }

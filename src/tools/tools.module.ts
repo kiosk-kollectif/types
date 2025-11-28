@@ -7,6 +7,7 @@ import { UsersModule } from 'src/users/users.module';
 import { ToolsCategoriesModule } from 'src/tools-categories/tools-categories.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
+import { ReservationsModule } from 'src/reservations/reservations.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module
     ToolsCategoriesModule,
     AuthModule,
     InvalidesTokenModule,
+    ReservationsModule,
   ],
   controllers: [ToolsController],
   providers: [ToolsService],

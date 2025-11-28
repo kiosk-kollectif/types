@@ -1,5 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import {
+  AggregateOptions,
+  Document,
+  Model,
+  PipelineStage,
+  Types,
+} from 'mongoose';
 import { slugify } from 'src/common/utils/slugify';
 import { ToolsCategories } from 'src/tools-categories/tools-categories.schema';
 import { ToolPublicInfo, ToolRequestStatus, UserPublicInfo } from 'src/types';
@@ -10,6 +16,10 @@ import { InternalServerErrorException } from '@nestjs/common';
 
 export type ToolDocument = Tool &
   Document & { getPublicInfo: () => ToolPublicInfo; getInfo: () => ToolInfo };
+
+export type ToolModel = Model<ToolDocument> & {
+  findAndJoin: typeof findAndJoin;
+};
 
 @Schema({ timestamps: true, versionKey: false })
 export class Tool {
@@ -62,7 +72,57 @@ ToolDocumentSchema.pre('save', function (next) {
   next();
 });
 
-function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
+function findAndJoin(
+  this: Model<ToolDocument>,
+  ...piplineStages: PipelineStage[]
+) {
+  return this.aggregate([
+    // { $match: filter },
+    ...piplineStages,
+    {
+      // Recuperer les reservations
+      $lookup: {
+        from: 'reservations',
+        localField: '_id',
+        foreignField: 'tool_id',
+        as: 'reservations',
+      },
+    },
+    {
+      // Recuperer les categories
+      $lookup: {
+        from: 'tools-categories',
+        localField: 'categories',
+        foreignField: '_id',
+        as: 'categories',
+      },
+    },
+    // Recuperer les locations
+    {
+      $lookup: {
+        from: 'warehouses',
+        localField: 'location',
+        foreignField: '_id',
+        as: 'location',
+      },
+    },
+    { $unwind: { path: '$location', preserveNullAndEmptyArrays: true } },
+    //Recuperer les infos utilisateurs
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'owner_id',
+        foreignField: '_id',
+        as: 'owner_id',
+      },
+    },
+    { $unwind: { path: '$owner_id', preserveNullAndEmptyArrays: true } },
+  ]);
+}
+
+(ToolDocumentSchema.statics as unknown as ToolModel).findAndJoin = findAndJoin;
+
+export function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
   const categories: string[] = [];
 
   if (Array.isArray(this.categories)) {
@@ -96,7 +156,26 @@ function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
     try {
       owner = getUserPublicProfil.call(this.owner_id);
     } catch (error) {
-      throw new InternalServerErrorException("Sound like yo didn't populate owner")
+      throw new InternalServerErrorException(
+        "Sound like yo didn't populate owner",
+      );
+    }
+  }
+
+  const reservations: string[][] = [];
+  if ('reservations' in this && Array.isArray(this.reservations)) {
+    for (const reservation of this.reservations) {
+      if (
+        typeof reservation == 'object' &&
+        'start_date' in reservation &&
+        'end_date' in reservation
+      ) {
+        reservations.push(
+          [reservation.start_date, reservation.end_date].map((d) =>
+            d instanceof Date ? d.toISOString() : new Date(d).toISOString(),
+          ),
+        );
+      }
     }
   }
 
@@ -111,10 +190,11 @@ function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
     slug: this.slug,
     location,
     owner,
+    reservations,
   };
 }
 
-function getToolInfo(this: ToolDocument): ToolInfo {
+export function getToolInfo(this: ToolDocument): ToolInfo {
   const categories: { name: string; id: string }[] = [];
 
   if (this.categories && Array.isArray(this.categories)) {

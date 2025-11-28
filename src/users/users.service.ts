@@ -116,8 +116,6 @@ export class UsersService {
   ) {
     if (!user.profil) user.profil = new this.userProfilModel({ _id: user._id });
 
-    console.log(userProfil.picture);
-
     if (picture) {
       const thumbBuffer = await sharp(picture.buffer)
         .resize({ width: 200 })
@@ -136,7 +134,6 @@ export class UsersService {
       user.profil.picture = profileUrl;
       user.profil.thumbnail = thumburl;
     } else if (userProfil.picture == 'removed') {
-      console.log('removing Picture');
       if (user.profil.picture) user.profil.picture = undefined;
       if (user.profil.thumbnail) user.profil.thumbnail = undefined;
     }

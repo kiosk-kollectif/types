@@ -5,23 +5,30 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Tool, ToolDocument } from './tools.schema';
+import { Tool, ToolDocument, type ToolModel } from './tools.schema';
 import { Model, RootFilterQuery, Types } from 'mongoose';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { uploadFile } from 'src/common/utils/cloudinary';
 import sharp from 'sharp';
 import { ToolsCategoriesService } from 'src/tools-categories/tools-categories.service';
 import { UserDocument } from 'src/users/users.schema';
-import { ToolRequestStatus, UserRole, type Tool as ToolInfo } from '../types';
+import {
+  ToolPublicInfo,
+  ToolRequestStatus,
+  UserRole,
+  type Tool as ToolInfo,
+} from '../types';
 import { sameObjectId } from 'src/common/utils/sameObjectId';
 import { GetToolByIds } from './dto/get-tools-by-ids.dto';
+import { ReservationsService } from 'src/reservations/reservations.service';
 
 @Injectable()
 export class ToolsService {
   constructor(
-    @InjectModel(Tool.name) private readonly toolModel: Model<ToolDocument>,
+    @InjectModel(Tool.name) private readonly toolModel: ToolModel,
     private readonly toolsCategorieServ: ToolsCategoriesService,
-  ) { }
+    private readonly reservationsServ: ReservationsService,
+  ) {}
 
   async getTools(
     query?: string,
@@ -29,46 +36,95 @@ export class ToolsService {
     page: number = 1,
     status?: ToolRequestStatus,
     limit: number = 10,
-  ) {
-    const searchOptions: RootFilterQuery<ToolDocument> = {};
-    if (query) {
-      searchOptions.name = { $regex: new RegExp(query, 'i') };
-    }
-
-    if (category) {
-      searchOptions.categories = { $in: [new Types.ObjectId(category)] };
-    }
-
-    const search = this.toolModel
-      .find(searchOptions)
-      .where({ status: ToolRequestStatus.ACCEPTED });
-
-    if (status) {
-      search.where({ status });
-    }
-
-    const total = await this.toolModel.countDocuments({
-      ...searchOptions,
+  ): Promise<{ page: number; totalPages: number; tools: ToolPublicInfo[] }> {
+    const searchOptions: RootFilterQuery<ToolDocument> = {
       status: ToolRequestStatus.ACCEPTED,
-    });
+    };
 
+    if (query) searchOptions.name = { $regex: new RegExp(query, 'i') };
+    if (category)
+      searchOptions.categories = { $in: [new Types.ObjectId(category)] };
+
+    const total = await this.toolModel.countDocuments(searchOptions);
     const totalPages = Math.max(1, Math.ceil(total / limit));
     const currentPage = Math.min(page, totalPages);
     const skip = (currentPage - 1) * limit;
+    // if (status) searchOptions.status = status;
 
-    search.skip(skip);
+    // const search = this.toolModel
+    //   .find(searchOptions)
+    //   .where({ status: ToolRequestStatus.ACCEPTED });
 
-    search.limit(limit);
+    // if (status) {
+    //   search.where({ status });
+    // }
 
-    const tools = await search
-      .populate('categories', 'name')
-      .populate('location', 'name')
-      .populate('owner_id');
+    // const total = await this.toolModel.countDocuments({
+    //   ...searchOptions,
+    //   status: ToolRequestStatus.ACCEPTED,
+    // });
+
+    // const totalPages = Math.max(1, Math.ceil(total / limit));
+    // const currentPage = Math.min(page, totalPages);
+    // const skip = (currentPage - 1) * limit;
+
+    // search.skip(skip);
+
+    // search.limit(limit);
+
+    // const tools = await search
+    //   .populate('categories', 'name')
+    //   .populate('location', 'name')
+    //   .populate('owner_id');
+
+    const result = await this.toolModel.aggregate([
+      { $match: searchOptions },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        // Recuperer les reservations
+        $lookup: {
+          from: 'reservations',
+          localField: '_id',
+          foreignField: 'tool_id',
+          as: 'reservations',
+        },
+      },
+      {
+        // Recuperer les categories
+        $lookup: {
+          from: 'tools-categories',
+          localField: 'categories',
+          foreignField: '_id',
+          as: 'categories',
+        },
+      },
+      // Recuperer les locations
+      {
+        $lookup: {
+          from: 'warehouses',
+          localField: 'location',
+          foreignField: '_id',
+          as: 'location',
+        },
+      },
+      { $unwind: { path: '$location', preserveNullAndEmptyArrays: true } },
+      //Recuperer les infos utilisateurs
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'owner_id',
+          foreignField: '_id',
+          as: 'owner_id',
+        },
+      },
+      { $unwind: { path: '$owner_id', preserveNullAndEmptyArrays: true } },
+    ]);
 
     return {
       page: currentPage,
       totalPages,
-      tools: tools.map((tool) => tool.getPublicInfo()),
+      tools: result.map((tool) => new this.toolModel(tool).getPublicInfo()),
     };
   }
 
@@ -136,11 +192,13 @@ export class ToolsService {
   }
 
   async getToolsByIds(ids: GetToolByIds) {
-    if (!ids?.ids) throw new BadRequestException("Missing paramd");
+    if (!ids?.ids) throw new BadRequestException('Missing paramd');
 
-    const result = await this.toolModel.find({ _id: { $in: ids.ids } })
-    await Promise.all(result.map(r => r.populate("owner_id")))
-    return result.map(r => r.getPublicInfo())
+    const result = await this.toolModel.findAndJoin({
+      $match: { _id: { $in: ids.ids.map((id) => new Types.ObjectId(id)) } },
+    });
+
+    return result.map((r) => new this.toolModel(r).getPublicInfo());
   }
 
   async deleteItem(id: string) {
@@ -150,14 +208,10 @@ export class ToolsService {
   }
 
   async getToolBySlug(slug: string) {
-    const tool = await this.toolModel
-      .findOne({ slug })
-      .populate('categories', 'name')
-      .populate('location', 'name')
-      .populate('owner_id');
+    const tool = await this.toolModel.findAndJoin({ $match: { slug } });
 
-    if (!tool) throw new NotFoundException('tool not found');
-    return tool.getPublicInfo();
+    if (tool.length == 0) throw new NotFoundException('tool not found');
+    return new this.toolModel(tool).getPublicInfo();
   }
 
   async updateTool(

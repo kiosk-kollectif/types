@@ -33,7 +33,7 @@ import { ApiGlobalResponse } from 'src/common/types';
 @ApiTags('Tools')
 @Controller('tools')
 export class ToolsController {
-  constructor(private readonly toolsService: ToolsService) { }
+  constructor(private readonly toolsService: ToolsService) {}
 
   @Get('/')
   @ApiOperation({ summary: 'Recuperer la liste des outils acceptes' })
@@ -52,16 +52,16 @@ export class ToolsController {
   async getTools(
     @Query('query') query?: string,
     @Query('category') category?: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('status') status?: ToolRequestStatus,
   ) {
     const toolsData = await this.toolsService.getTools(
       query,
       category,
-      page,
+      Number(page),
       status,
-      limit,
+      Number(limit),
     );
 
     return {
@@ -98,16 +98,17 @@ export class ToolsController {
     };
   }
 
-
   @Post('/get-by-ids')
-  async getToolsByIds(@Body() ids: GetToolByIds): Promise<ApiGlobalResponse<{ tools: ToolPublicInfo[]; }>> {
+  async getToolsByIds(
+    @Body() ids: GetToolByIds,
+  ): Promise<ApiGlobalResponse<{ tools: ToolPublicInfo[] }>> {
     const tools = await this.toolsService.getToolsByIds(ids);
 
     return {
       StatusCode: HttpStatus.OK,
       message: 'there you are',
-      data: { tools }
-    }
+      data: { tools },
+    };
   }
 
   @Post(':id/delete')

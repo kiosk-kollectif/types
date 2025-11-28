@@ -4,7 +4,6 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './auth.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { OwnerRequestGuard } from './owner-request.guard';
 import { PermissionLevelGuard } from './permission-level.guard';
 import { JWT_TOKEN_EXPIRATION } from 'src/common/utils/constants';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -27,12 +26,7 @@ import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     InvalidesTokenModule,
   ],
-  providers: [
-    AuthService,
-    JwtStrategy,
-    OwnerRequestGuard,
-    PermissionLevelGuard,
-  ],
+  providers: [AuthService, JwtStrategy, PermissionLevelGuard],
   exports: [AuthService, MongooseModule],
 })
 export class AuthModule {}
