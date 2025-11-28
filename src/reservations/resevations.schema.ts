@@ -6,7 +6,7 @@ import { User } from 'src/users/users.schema';
 
 export type ReservationDocument = Reservation & Document;
 
-@Schema({ versionKey: false, timestamps: true })
+@Schema({ versionKey: false, timestamps: true, collection: "reservations" })
 export class Reservation {
   @Prop({ required: true, type: Types.ObjectId, ref: Tool.name })
   tool_id: Types.ObjectId;

@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Tool, ToolDocument, type ToolModel } from './tools.schema';
+import { getToolsPublicInfo, Tool, ToolDocument, type ToolModel } from './tools.schema';
 import { Model, RootFilterQuery, Types } from 'mongoose';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { uploadFile } from 'src/common/utils/cloudinary';
@@ -28,7 +28,7 @@ export class ToolsService {
     @InjectModel(Tool.name) private readonly toolModel: ToolModel,
     private readonly toolsCategorieServ: ToolsCategoriesService,
     private readonly reservationsServ: ReservationsService,
-  ) {}
+  ) { }
 
   async getTools(
     query?: string,
@@ -124,7 +124,7 @@ export class ToolsService {
     return {
       page: currentPage,
       totalPages,
-      tools: result.map((tool) => new this.toolModel(tool).getPublicInfo()),
+      tools: result.map((tool) => getToolsPublicInfo.call(tool)),
     };
   }
 
@@ -198,7 +198,7 @@ export class ToolsService {
       $match: { _id: { $in: ids.ids.map((id) => new Types.ObjectId(id)) } },
     });
 
-    return result.map((r) => new this.toolModel(r).getPublicInfo());
+    return result.map((r) => getToolsPublicInfo.call(r));
   }
 
   async deleteItem(id: string) {
@@ -211,7 +211,7 @@ export class ToolsService {
     const tool = await this.toolModel.findAndJoin({ $match: { slug } });
 
     if (tool.length == 0) throw new NotFoundException('tool not found');
-    return new this.toolModel(tool).getPublicInfo();
+    return getToolsPublicInfo.call(tool[0]);
   }
 
   async updateTool(
