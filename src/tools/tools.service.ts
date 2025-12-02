@@ -5,7 +5,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { getToolsPublicInfo, Tool, ToolDocument, type ToolModel } from './tools.schema';
+import {
+  getToolsPublicInfo,
+  Tool,
+  ToolDocument,
+  type ToolModel,
+} from './tools.schema';
 import { Model, RootFilterQuery, Types } from 'mongoose';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { uploadFile } from 'src/common/utils/cloudinary';
@@ -33,8 +38,8 @@ export class ToolsService {
   async getTools(
     query?: string,
     category?: string,
+    availableOnly?: boolean,
     page: number = 1,
-    status?: ToolRequestStatus,
     limit: number = 10,
   ): Promise<{ page: number; totalPages: number; tools: ToolPublicInfo[] }> {
     const searchOptions: RootFilterQuery<ToolDocument> = {
@@ -89,6 +94,25 @@ export class ToolsService {
           foreignField: 'tool_id',
           as: 'reservations',
         },
+      },
+      // Filter les reservatuibs qui sont pas en cours
+      {
+        $match: {
+          ...(availableOnly && {
+            reservations: {
+              $not: {
+                $elemMatch: {
+                  start_date: {
+                    $lte: new Date(),
+                  },
+                  end_date: {
+                    $gte: new Date(),
+                  },
+                },
+              },
+            },
+          })
+        }
       },
       {
         // Recuperer les categories

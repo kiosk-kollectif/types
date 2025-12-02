@@ -33,7 +33,7 @@ import { ApiGlobalResponse } from 'src/common/types';
 @ApiTags('Tools')
 @Controller('tools')
 export class ToolsController {
-  constructor(private readonly toolsService: ToolsService) {}
+  constructor(private readonly toolsService: ToolsService) { }
 
   @Get('/')
   @ApiOperation({ summary: 'Recuperer la liste des outils acceptes' })
@@ -54,13 +54,13 @@ export class ToolsController {
     @Query('category') category?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-    @Query('status') status?: ToolRequestStatus,
+    @Query('availableOnly') availableOnly?: string,
   ) {
     const toolsData = await this.toolsService.getTools(
       query,
       category,
+      availableOnly === 'true',
       Number(page),
-      status,
       Number(limit),
     );
 
