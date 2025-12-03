@@ -26,9 +26,13 @@ export class ToolsCategoriesService {
     return category;
   }
 
-  async getCategoriesById(id: Array<string | Types.ObjectId>) {
+  async getCategoriesById(
+    id: Array<string | Types.ObjectId> | Types.ObjectId | string,
+  ) {
     try {
-      return await this.toolsCategoriesModel.find({ _id: { $in: id } });
+      return await this.toolsCategoriesModel.find({
+        _id: { $in: Array.isArray(id) ? id : [id] },
+      });
     } catch (error) {
       throw new ConflictException('This category does not exist', {
         description: (<Error>error).message,

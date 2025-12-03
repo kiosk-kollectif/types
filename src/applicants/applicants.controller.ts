@@ -114,4 +114,17 @@ export class ApplicantsController {
       },
     };
   }
+
+  @Get('me/rentals')
+  @PermissionLevel([UserRole.APPLICANT])
+  @ApiOperation({ summary: "Recuperer les locations des outils d'un deposant" })
+  async getApplicantsRentals(@User() user: usersSchema.UserDocument) {
+    const rentals = await this.applicantService.getApplicantRentalsInfo(user);
+
+    return {
+      StatusCode: HttpStatus.OK,
+      message: 'Here you are',
+      data: rentals,
+    };
+  }
 }

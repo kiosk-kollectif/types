@@ -8,7 +8,7 @@ export class CreateToolDto {
   owner_id?: string;
 
   @ApiProperty()
-  categories: string[];
+  categories: string[] | string;
 
   @ApiProperty({ required: false })
   description?: string;

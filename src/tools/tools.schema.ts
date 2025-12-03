@@ -78,7 +78,6 @@ function findAndJoin(
 ) {
   return this.aggregate([
     // { $match: filter },
-    ...piplineStages,
     {
       // Recuperer les reservations
       $lookup: {
@@ -117,6 +116,7 @@ function findAndJoin(
       },
     },
     { $unwind: { path: '$owner_id', preserveNullAndEmptyArrays: true } },
+    ...piplineStages,
   ]);
 }
 
@@ -213,7 +213,7 @@ export function getToolInfo(this: ToolDocument): ToolInfo {
   }
 
   return {
-    ...this.getPublicInfo(),
+    ...getToolsPublicInfo.call(this),
     price: this.price,
     status: this.status,
     categories,

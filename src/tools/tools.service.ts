@@ -33,7 +33,7 @@ export class ToolsService {
     @InjectModel(Tool.name) private readonly toolModel: ToolModel,
     private readonly toolsCategorieServ: ToolsCategoriesService,
     private readonly reservationsServ: ReservationsService,
-  ) { }
+  ) {}
 
   async getTools(
     query?: string,
@@ -95,7 +95,7 @@ export class ToolsService {
           as: 'reservations',
         },
       },
-      // Filter les reservatuibs qui sont pas en cours
+      // Filter les outils qui ne sont pas en reservations du quotidien
       {
         $match: {
           ...(availableOnly && {
@@ -111,8 +111,8 @@ export class ToolsService {
                 },
               },
             },
-          })
-        }
+          }),
+        },
       },
       {
         // Recuperer les categories
@@ -167,7 +167,7 @@ export class ToolsService {
           "You don't have permission edit some fields",
         );
 
-      tool.owner_id = user.id as string;
+      tool.owner_id = user._id.toString();
 
       //Case Admin adding a new tool for applicant
     } else {
@@ -200,6 +200,11 @@ export class ToolsService {
 
     const newTool = await this.toolModel.create({
       ...tool,
+      owner_id: new Types.ObjectId(tool.owner_id),
+      categories: Array.isArray(tool.categories)
+        ? tool.categories.map((id) => new Types.ObjectId(id))
+        : [new Types.ObjectId(tool.categories)],
+      location: tool.location ? new Types.ObjectId(tool.location) : undefined,
       thumbnail,
       images: imagesLinks,
     });
@@ -265,9 +270,9 @@ export class ToolsService {
 
     if (tool.categories) {
       await this.toolsCategorieServ.getCategoriesById(tool.categories);
-      toolExist.categories = tool.categories.map(
-        (cat) => new Types.ObjectId(cat),
-      );
+      toolExist.categories = Array.isArray(tool.categories)
+        ? tool.categories.map((cat) => new Types.ObjectId(cat))
+        : [new Types.ObjectId(tool.categories)];
     }
 
     if (tool.images) {

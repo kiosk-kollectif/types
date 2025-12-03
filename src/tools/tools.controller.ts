@@ -33,7 +33,7 @@ import { ApiGlobalResponse } from 'src/common/types';
 @ApiTags('Tools')
 @Controller('tools')
 export class ToolsController {
-  constructor(private readonly toolsService: ToolsService) { }
+  constructor(private readonly toolsService: ToolsService) {}
 
   @Get('/')
   @ApiOperation({ summary: 'Recuperer la liste des outils acceptes' })
