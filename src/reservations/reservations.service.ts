@@ -10,6 +10,8 @@ import { PostReservationDto } from './dto/post-reservation.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Reservation, ReservationDocument } from './resevations.schema';
+import { ReservationRequestStatus, ToolPublicInfo, UserStats } from 'src/types';
+import { getToolsPublicInfo } from 'src/tools/tools.schema';
 
 @Injectable()
 export class ReservationsService {
@@ -84,5 +86,33 @@ export class ReservationsService {
         };
       }),
     );
+  }
+
+  async getReservationsForUser(user: UserDocument): Promise<UserStats> {
+    const result = await this.reservationsModel
+      .find({ renter_id: user._id })
+      .populate('tool_id');
+
+    const tools_rented = result.map((v) => {
+      return {
+        tool: getToolsPublicInfo.call(v.tool_id) as ToolPublicInfo,
+        status: v.status,
+      };
+    });
+
+    const rentals_tools = tools_rented.filter(
+      (v) => v.status == ReservationRequestStatus.PENDING,
+    );
+
+    return {
+      rentalsTools: {
+        length: rentals_tools.length,
+        tools: rentals_tools.map((v) => v.tool),
+      },
+      total_rentedd_tools: {
+        length: tools_rented.length,
+        tools: tools_rented.map((v) => v.tool),
+      },
+    };
   }
 }

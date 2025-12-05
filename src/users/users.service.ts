@@ -32,6 +32,7 @@ import sharp from 'sharp';
 import { uploadFile } from 'src/common/utils/cloudinary';
 import { UserStats } from 'src/types';
 import { InvalidesTokenService } from 'src/invalides-token/invalides-token.service';
+import { ReservationsService } from 'src/reservations/reservations.service';
 
 @Injectable()
 export class UsersService {
@@ -43,6 +44,7 @@ export class UsersService {
     private readonly userProfilModel: Model<UserProfilDocument>,
     private readonly authService: AuthService,
     private readonly invalidateTokenService: InvalidesTokenService,
+    private readonly reservationService: ReservationsService,
   ) {}
 
   private async getLastPasswordResetRequest(id: string | Types.ObjectId) {
@@ -199,14 +201,8 @@ export class UsersService {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getUserStats(user: UserDocument) {
-    //Faire la logique qui va faire sortir la statique de l'utilisateur
-    const stats: UserStats = {
-      rentalsTools: { length: 0, tools: undefined },
-      total_rentedd_tools: { length: 0 },
-    };
-
-    return stats;
+  async getUserStats(user: UserDocument): Promise<UserStats> {
+    return await this.reservationService.getReservationsForUser(user);
   }
 
   generateUserToken(user: UserDocument) {

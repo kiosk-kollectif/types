@@ -215,8 +215,8 @@ export class UsersController {
   @PermissionLevel(Object.values(UserRole))
   @Get('me/stats')
   @ApiOperation({ summary: "Recuperer les donnees de l'utilisateur" })
-  getUserStats(@User() user: usersSchema.UserDocument) {
-    const stats = this.UsersService.getUserStats(user);
+  async getUserStats(@User() user: usersSchema.UserDocument) {
+    const stats = await this.UsersService.getUserStats(user);
 
     return {
       statusCode: HttpStatus.OK,
