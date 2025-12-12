@@ -20,13 +20,14 @@ export enum UserRole {
   USER = 'utilisateur',
 }
 
-export type User = UserPublicInfo & {
+export type User = Omit<UserPublicInfo, 'profil'> & {
   profil?: {
     firstname?: string;
     lastname?: string;
     phone?: string;
     adress?: string;
   };
+  createdAt: string;
 };
 
 export type UserStats = {
