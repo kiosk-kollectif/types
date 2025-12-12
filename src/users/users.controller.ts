@@ -113,15 +113,7 @@ export class UsersController {
     description: 'Utilisateur récupéré avec succès',
   })
   getUserById(@User() user: usersSchema.UserDocument) {
-    const userInfo: UserInfo = user.getUserPublicProfil();
-    if (user.profil) {
-      if (!userInfo.profil) userInfo.profil = {};
-      if (user.profil.adress) userInfo.profil.adress = user.profil.adress;
-      if (user.profil.phone) userInfo.profil.phone = user.profil.phone;
-      if (user.profil.firstname)
-        userInfo.profil.firstname = user.profil.firstname;
-      if (user.profil.lastname) userInfo.profil.lastname = user.profil.lastname;
-    }
+    const userInfo: UserInfo = user.getUserProfil();
 
     return {
       statusCode: HttpStatus.OK,

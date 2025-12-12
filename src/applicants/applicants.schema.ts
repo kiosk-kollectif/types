@@ -3,20 +3,23 @@ import { Document, Types } from 'mongoose';
 import { ApplicantRequestStatus } from 'src/types';
 import { User } from 'src/users/users.schema';
 
-export type ApplicationRequestDocument = ApplicationRequest & Document;
+export type ApplicantRequestDocument = ApplicantRequest & Document;
 
 @Schema({
-  collection: 'application_requests',
+  collection: 'applicant_requests',
   versionKey: false,
   timestamps: true,
 })
-export class ApplicationRequest {
+export class ApplicantRequest {
   @Prop({ required: true, ref: User.name })
   user_id: Types.ObjectId;
 
   @Prop({ required: true, default: ApplicantRequestStatus.PENDING })
   status: ApplicantRequestStatus;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export const ApplicationRequestSchema =
-  SchemaFactory.createForClass(ApplicationRequest);
+export const ApplicantRequestSchema =
+  SchemaFactory.createForClass(ApplicantRequest);

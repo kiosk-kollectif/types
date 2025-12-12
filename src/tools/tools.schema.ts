@@ -21,7 +21,7 @@ export type ToolModel = Model<ToolDocument> & {
   findAndJoin: typeof findAndJoin;
 };
 
-@Schema({ timestamps: true, versionKey: false })
+@Schema({ timestamps: true, versionKey: false, collection: 'tools' })
 export class Tool {
   @Prop({ required: true })
   name: string;
@@ -61,6 +61,8 @@ export class Tool {
   slug: string;
 
   _id: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const ToolDocumentSchema = SchemaFactory.createForClass(Tool);
@@ -217,6 +219,7 @@ export function getToolInfo(this: ToolDocument): ToolInfo {
     price: this.price,
     status: this.status,
     categories,
+    createdAt: this.createdAt.toISOString(),
   };
 }
 

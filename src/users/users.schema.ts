@@ -1,9 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { UserPublicInfo, UserRole } from '../types';
+import { UserPublicInfo, UserRole, User as UserInfo } from '../types';
 
 export type UserDocument = User &
-  Document & { getUserPublicProfil: typeof getUserPublicProfil };
+  Document & {
+    getUserPublicProfil: typeof getUserPublicProfil;
+    getUserProfil: typeof getUserProfil;
+  };
 export type UserProfilDocument = UserProfil & Document;
 
 @Schema({ versionKey: false })
@@ -83,3 +86,23 @@ export function getUserPublicProfil(this: UserDocument): UserPublicInfo {
 }
 
 UserSchema.methods.getUserPublicProfil = getUserPublicProfil;
+
+export function getUserProfil(this: UserDocument): UserInfo {
+  const info = getUserPublicProfil.call(this);
+  return {
+    ...info,
+    profil: this.profil
+      ? {
+          firstname: this.profil.firstname,
+          lastname: this.profil.lastname,
+          adress: this.profil.adress,
+          phone: this.profil.phone,
+          picture: this.profil.picture,
+          thumbnail: this.profil.thumbnail,
+        }
+      : undefined,
+    createdAt: this.createdAt.toISOString(),
+  };
+}
+
+UserSchema.methods.getUserProfil = getUserProfil;

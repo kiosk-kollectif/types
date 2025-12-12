@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
-  ApplicationRequest,
-  ApplicationRequestDocument,
+  ApplicantRequest,
+  ApplicantRequestDocument,
 } from './applicants.schema';
 import { Model } from 'mongoose';
 import { getUserPublicProfil, UserDocument } from 'src/users/users.schema';
@@ -23,8 +23,8 @@ import { ReservationRequestStatus } from 'src/types/reservations';
 @Injectable()
 export class ApplicantsService {
   constructor(
-    @InjectModel(ApplicationRequest.name)
-    private readonly requestsModel: Model<ApplicationRequestDocument>,
+    @InjectModel(ApplicantRequest.name)
+    private readonly requestsModel: Model<ApplicantRequestDocument>,
     @InjectModel(Tool.name) private readonly toolModel: ToolModel,
     @InjectModel(Reservation.name)
     private readonly reservationsModel: Model<ReservationDocument>,
