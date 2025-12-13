@@ -1,8 +1,5 @@
-import {
-  ApplicantRequest,
-  ApplicantRequestDocument,
-} from 'src/applicants/applicants.schema';
-import { Tool, type ToolDocument } from 'src/tools/tools.schema';
+import { ApplicantRequestDocument } from 'src/applicants/applicants.schema';
+import { type ToolDocument } from 'src/tools/tools.schema';
 import { PendingRequest } from 'src/types/admins';
 import { UserDocument } from 'src/users/users.schema';
 
@@ -11,18 +8,15 @@ export function parseRenewQueue(
 ): PendingRequest[] {
   const pendingRequest: PendingRequest[] = [];
   for (const request of queue) {
-    const model = request.collection.name;
-    if (model === 'tools') {
+    if (isToolRequest(request)) {
       pendingRequest.push({
         type: 'tool_request',
-        //@ts-ignore
         tool: request.getInfo(),
         createdAt: request.createdAt.toString(),
       });
-    } else if (model === 'applicant_requests') {
+    } else if (isApplicantRequest(request)) {
       pendingRequest.push({
         type: 'applicant_request',
-        //@ts-ignore
         user: request.user_id.getUserProfil(),
         createdAt: request.createdAt.toString(),
       });
@@ -30,4 +24,37 @@ export function parseRenewQueue(
   }
 
   return pendingRequest;
+}
+
+function isApplicantRequest(req: unknown): req is ApplicantRequestDocument & {
+  user_id: UserDocument;
+  collection: { name: 'applicant_requests' };
+} {
+  if (
+    typeof req == 'object' &&
+    req !== null &&
+    'collection' in req &&
+    typeof req.collection == 'object' &&
+    req.collection !== null &&
+    'name' in req.collection &&
+    typeof req.collection.name == 'string'
+  ) {
+    return req.collection.name === 'applicant_requests';
+  }
+  return false;
+}
+
+function isToolRequest(req: unknown): req is ToolDocument {
+  if (
+    typeof req == 'object' &&
+    req !== null &&
+    'collection' in req &&
+    typeof req.collection == 'object' &&
+    req.collection !== null &&
+    'name' in req.collection &&
+    typeof req.collection.name == 'string'
+  ) {
+    return req.collection.name === 'tools';
+  }
+  return false;
 }
