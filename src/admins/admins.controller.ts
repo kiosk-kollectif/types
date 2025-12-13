@@ -10,9 +10,12 @@ export class AdminsController {
   @PermissionLevel([UserRole.ADMIN, UserRole.MANAGER])
   @Get('review-queue')
   async getReviewQueue(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
   ) {
-    return await this.adminsService.getReviewQueue(page, limit);
+    return await this.adminsService.getReviewQueue(
+      parseInt(page),
+      parseInt(limit),
+    );
   }
 }
