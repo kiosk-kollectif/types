@@ -17,12 +17,14 @@ export function parseRenewQueue(
         type: 'tool_request',
         //@ts-ignore
         tool: request.getInfo(),
+        createdAt: request.createdAt.toString(),
       });
     } else if (model === 'applicant_requests') {
       pendingRequest.push({
         type: 'applicant_request',
         //@ts-ignore
         user: request.user_id.getUserProfil(),
+        createdAt: request.createdAt.toString(),
       });
     }
   }
