@@ -1,11 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import {
-  AggregateOptions,
-  Document,
-  Model,
-  PipelineStage,
-  Types,
-} from 'mongoose';
+import { Document, Model, PipelineStage, Types } from 'mongoose';
 import { slugify } from 'src/common/utils/slugify';
 import { ToolsCategories } from 'src/tools-categories/tools-categories.schema';
 import { ToolPublicInfo, ToolRequestStatus, UserPublicInfo } from 'src/types';
@@ -154,12 +148,13 @@ export function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
   let owner!: UserPublicInfo;
 
   if (this.owner_id && typeof this.owner_id == 'object') {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       owner = getUserPublicProfil.call(this.owner_id);
     } catch (error) {
       throw new InternalServerErrorException(
         "Sound like yo didn't populate owner",
+        error as Error,
       );
     }
   }
@@ -173,7 +168,9 @@ export function getToolsPublicInfo(this: ToolDocument): ToolPublicInfo {
         'end_date' in reservation
       ) {
         reservations.push(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           [reservation.start_date, reservation.end_date].map((d) =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             d instanceof Date ? d.toISOString() : new Date(d).toISOString(),
           ),
         );
@@ -214,6 +211,7 @@ export function getToolInfo(this: ToolDocument): ToolInfo {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     ...getToolsPublicInfo.call(this),
     price: this.price,

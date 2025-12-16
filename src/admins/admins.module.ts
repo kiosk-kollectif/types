@@ -9,6 +9,8 @@ import {
 import { Tool, ToolDocumentSchema } from 'src/tools/tools.schema';
 import { AuthModule } from 'src/auth/auth.module';
 import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
+import { UsersModule } from 'src/users/users.module';
+import { ReservationsModule } from 'src/reservations/reservations.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module
     ]),
     AuthModule,
     InvalidesTokenModule,
+    UsersModule,
+    ReservationsModule,
   ],
   controllers: [AdminsController],
   providers: [AdminsService],

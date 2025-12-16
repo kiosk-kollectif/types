@@ -200,7 +200,6 @@ export class UsersService {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getUserStats(user: UserDocument): Promise<UserStats> {
     return await this.reservationService.getReservationsForUser(user);
   }

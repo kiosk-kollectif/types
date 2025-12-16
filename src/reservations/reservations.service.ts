@@ -2,9 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
-import { User } from 'src/users/users.decorator';
 import { UserDocument } from 'src/users/users.schema';
 import { PostReservationDto } from './dto/post-reservation.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -114,5 +112,11 @@ export class ReservationsService {
         tools: tools_rented.map((v) => v.tool),
       },
     };
+  }
+
+  async revervationsForUser(user_id: string) {
+    return await this.reservationsModel.find({
+      renter_id: new Types.ObjectId(user_id),
+    });
   }
 }
