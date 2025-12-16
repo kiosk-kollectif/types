@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -73,5 +73,19 @@ export class AdminsService {
     };
 
     return userStats;
+  }
+
+  async getToolsStats(id: string) {
+    const tool = await this.toolModel
+      .findById(id)
+      .populate('owner_id')
+      .populate('categories')
+      .populate('location');
+
+    if (!tool) return new NotFoundException('Tool not found');
+    const toolsReservations =
+      await this.reservationsService.getReservationsForItem(id);
+
+    return { tool: tool.getInfo(), reservations: toolsReservations.length };
   }
 }

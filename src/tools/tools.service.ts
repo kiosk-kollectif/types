@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   BadRequestException,
   Injectable,
@@ -11,7 +13,7 @@ import {
   ToolDocument,
   type ToolModel,
 } from './tools.schema';
-import { Model, RootFilterQuery, Types } from 'mongoose';
+import { RootFilterQuery, Types } from 'mongoose';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { uploadFile } from 'src/common/utils/cloudinary';
 import sharp from 'sharp';
@@ -54,33 +56,6 @@ export class ToolsService {
     const totalPages = Math.max(1, Math.ceil(total / limit));
     const currentPage = Math.min(page, totalPages);
     const skip = (currentPage - 1) * limit;
-    // if (status) searchOptions.status = status;
-
-    // const search = this.toolModel
-    //   .find(searchOptions)
-    //   .where({ status: ToolRequestStatus.ACCEPTED });
-
-    // if (status) {
-    //   search.where({ status });
-    // }
-
-    // const total = await this.toolModel.countDocuments({
-    //   ...searchOptions,
-    //   status: ToolRequestStatus.ACCEPTED,
-    // });
-
-    // const totalPages = Math.max(1, Math.ceil(total / limit));
-    // const currentPage = Math.min(page, totalPages);
-    // const skip = (currentPage - 1) * limit;
-
-    // search.skip(skip);
-
-    // search.limit(limit);
-
-    // const tools = await search
-    //   .populate('categories', 'name')
-    //   .populate('location', 'name')
-    //   .populate('owner_id');
 
     const result = await this.toolModel.aggregate([
       { $match: searchOptions },

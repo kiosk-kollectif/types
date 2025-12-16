@@ -22,6 +22,7 @@ export class AdminsController {
     );
   }
 
+  // Potentiels requetes sur l'utilisateurs
   @PermissionLevel([UserRole.ADMIN, UserRole.MANAGER])
   @Get('/users/:id/stats')
   async getUserStats(@Param('id') id: string) {
@@ -30,6 +31,17 @@ export class AdminsController {
     return {
       StatusCode: HttpStatus.OK,
       message: 'success',
+      data: { ...stats },
+    };
+  }
+
+  // Potentiels requetes sur les outils
+  @Get('/tools/:id/stats')
+  async getToolsStats(@Param('id') id: string) {
+    const stats = await this.adminsService.getToolsStats(id);
+    return {
+      StatusCode: HttpStatus.OK,
+      message: 'nice bro',
       data: { ...stats },
     };
   }
