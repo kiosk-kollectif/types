@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Body,
   Controller,
@@ -25,7 +26,7 @@ import { ToolsService } from './tools.service';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
 import { User } from 'src/users/users.decorator';
 import * as usersSchema from 'src/users/users.schema';
-import { ToolPublicInfo, ToolRequestStatus, UserRole } from 'src/types';
+import { ToolPublicInfo, UserRole } from 'src/types';
 import { UpdateToolDto } from './dto/udate-tool-dto';
 import { GetToolByIds } from './dto/get-tools-by-ids.dto';
 import { ApiGlobalResponse } from 'src/common/types';
@@ -142,14 +143,14 @@ export class ToolsController {
   async editTool(
     @Param('id') id: string,
     @UploadedFiles() images: Express.Multer.File[],
-    @Body() createToolDto: UpdateToolDto,
+    @Body() updateToolDto: UpdateToolDto,
     @User() user: usersSchema.UserDocument,
   ) {
     const tool = await this.toolsService.updateTool(
       id,
-      createToolDto,
+      updateToolDto,
       user,
-      images,
+      images.length > 0 ? images : undefined,
     );
 
     return {

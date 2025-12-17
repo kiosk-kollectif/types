@@ -28,6 +28,7 @@ import {
 import { sameObjectId } from 'src/common/utils/sameObjectId';
 import { GetToolByIds } from './dto/get-tools-by-ids.dto';
 import { ReservationsService } from 'src/reservations/reservations.service';
+import { UpdateToolDto } from './dto/udate-tool-dto';
 
 @Injectable()
 export class ToolsService {
@@ -220,7 +221,7 @@ export class ToolsService {
 
   async updateTool(
     id: string,
-    tool: Partial<CreateToolDto> & { images?: string[] },
+    tool: UpdateToolDto,
     user: UserDocument,
     images?: Express.Multer.File[],
   ): Promise<ToolInfo> {
@@ -234,7 +235,10 @@ export class ToolsService {
 
     const toolExist = await this.toolModel.findById(id);
     if (!toolExist) throw new NotFoundException('Your item is not found');
-    if (!sameObjectId(toolExist.owner_id, user._id))
+    if (
+      !sameObjectId(toolExist.owner_id, user._id) &&
+      user.role == UserRole.APPLICANT
+    )
       throw new UnauthorizedException('You are not the owner of this tool');
 
     if (tool.name) toolExist.name = tool.name;
@@ -242,12 +246,13 @@ export class ToolsService {
     if (tool.dayprice) toolExist.dayprice = tool.dayprice;
     if (tool.owner_id) toolExist.owner_id = new Types.ObjectId(tool.owner_id);
     if (tool.location) toolExist.location = new Types.ObjectId(tool.location);
+    if (tool.status) toolExist.status = tool.status;
 
     if (tool.categories) {
       await this.toolsCategorieServ.getCategoriesById(tool.categories);
-      toolExist.categories = Array.isArray(tool.categories)
-        ? tool.categories.map((cat) => new Types.ObjectId(cat))
-        : [new Types.ObjectId(tool.categories)];
+      toolExist.categories = tool.categories.map(
+        (cat) => new Types.ObjectId(cat),
+      );
     }
 
     if (tool.images) {
