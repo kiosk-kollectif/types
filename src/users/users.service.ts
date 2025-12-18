@@ -12,7 +12,7 @@ import {
   UserProfil,
   UserProfilDocument,
 } from './users.schema';
-import { Model, Types } from 'mongoose';
+import { Model, RootFilterQuery, Types } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import {
   hashPassword,
@@ -33,6 +33,7 @@ import { uploadFile } from 'src/common/utils/cloudinary';
 import { UserStats } from 'src/types';
 import { InvalidesTokenService } from 'src/invalides-token/invalides-token.service';
 import { ReservationsService } from 'src/reservations/reservations.service';
+import { GetUsersQueryRequestDto } from './dto/get-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -53,10 +54,36 @@ export class UsersService {
       .sort({ createdAt: -1 });
   }
 
-  async getUsers(): Promise<string[]> {
-    return new Promise((res) => {
-      res(['user1', 'user2']);
-    });
+  async getUsers(request: GetUsersQueryRequestDto) {
+    const searchQuery: RootFilterQuery<UserDocument> = {};
+    if (request.status) searchQuery.status = request.status;
+    if (request.role) searchQuery.role = request.role;
+    if (request.search) {
+      searchQuery.$or = [
+        { username: { $regex: request.search, $options: 'i' } },
+        { email: { $regex: request.search, $options: 'i' } },
+      ];
+    }
+
+    const skip = (request.page - 1) * request.limit;
+
+    const [users, total] = await Promise.all([
+      this.userModel
+        .find({ ...searchQuery })
+        .skip(skip)
+        .limit(request.limit),
+      this.userModel.countDocuments(searchQuery),
+    ]);
+
+    const totalPages = Math.ceil(total / request.limit);
+
+    return {
+      users: users.map((u) => u.getUserProfil()),
+      currentPage: request.page,
+      totalPages,
+      limit: request.limit,
+      totalItems: total,
+    };
   }
 
   async registerUser(user: CreateUserDto): Promise<string> {

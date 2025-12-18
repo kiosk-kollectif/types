@@ -5,7 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Req,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -30,11 +30,24 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { User as UserInfo, UserRole } from 'src/types';
 import { InvalidateToken } from 'src/common/decorator/invalidate-token.decorator';
 import type { ApiGlobalResponse } from 'src/common/types';
+import { GetUsersQueryRequestDto } from './dto/get-users.dto';
 
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly UsersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
+
+  @PermissionLevel([UserRole.ADMIN, UserRole.MANAGER])
+  @Get()
+  @ApiOperation({ summary: 'Recuperer la liste des utilisateurs' })
+  async getUsers(@Query() getUsersQueryRequestDto: GetUsersQueryRequestDto) {
+    const data = await this.usersService.getUsers(getUsersQueryRequestDto);
+    return {
+      StatusCode: HttpStatus.OK,
+      message: 'Users retrieved successfully',
+      data,
+    };
+  }
 
   @HttpCode(201)
   @Post('register')
@@ -63,7 +76,7 @@ export class UsersController {
     @Body()
     user: CreateUserDto,
   ) {
-    const token = await this.UsersService.registerUser(user);
+    const token = await this.usersService.registerUser(user);
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -95,7 +108,7 @@ export class UsersController {
     description: "L'utilisateur n'existe pas",
   })
   async login(@Body() user: LoginUserInfoDto) {
-    const token = await this.UsersService.userLogin(user);
+    const token = await this.usersService.userLogin(user);
 
     return {
       statusCode: HttpStatus.OK,
@@ -140,7 +153,7 @@ export class UsersController {
     @User() user: usersSchema.UserDocument,
     @Body() userInfo: EditUserInfoDto,
   ) {
-    const data = await this.UsersService.editUserInfo(user, userInfo);
+    const data = await this.usersService.editUserInfo(user, userInfo);
 
     return {
       statusCode: HttpStatus.ACCEPTED,
@@ -169,7 +182,7 @@ export class UsersController {
     @UploadedFile() picture?: Express.Multer.File,
   ) {
     const { token, user: newUserData } =
-      await this.UsersService.editUserProfile(user, userProfil, picture);
+      await this.usersService.editUserProfile(user, userProfil, picture);
 
     return {
       statusCode: HttpStatus.ACCEPTED,
@@ -196,7 +209,7 @@ export class UsersController {
     description: 'Demande déjà existante, veuillez patienter',
   })
   async requestPasswordReset(@User() user: usersSchema.UserDocument) {
-    await this.UsersService.requestPasswordReset(user);
+    await this.usersService.requestPasswordReset(user);
 
     return {
       statusCode: HttpStatus.ACCEPTED,
@@ -208,7 +221,7 @@ export class UsersController {
   @Get('me/stats')
   @ApiOperation({ summary: "Recuperer les donnees de l'utilisateur" })
   async getUserStats(@User() user: usersSchema.UserDocument) {
-    const stats = await this.UsersService.getUserStats(user);
+    const stats = await this.usersService.getUserStats(user);
 
     return {
       statusCode: HttpStatus.OK,
@@ -220,8 +233,10 @@ export class UsersController {
   @Post('me/refresh-token')
   @InvalidateToken()
   @PermissionLevel(Object.values(UserRole))
-  refreshUserToken(@User() user): ApiGlobalResponse<{ token: string }> {
-    const token = this.UsersService.generateUserToken(user);
+  refreshUserToken(
+    @User() user: usersSchema.UserDocument,
+  ): ApiGlobalResponse<{ token: string }> {
+    const token = this.usersService.generateUserToken(user);
 
     return {
       StatusCode: HttpStatus.ACCEPTED,
@@ -235,7 +250,7 @@ export class UsersController {
   @PermissionLevel(Object.values(UserRole))
   @InvalidateToken()
   @Post('me/logout')
-  async disconnectUser() {
+  disconnectUser() {
     return {
       statusCode: HttpStatus.CREATED,
       message: 'User Disconnected',
