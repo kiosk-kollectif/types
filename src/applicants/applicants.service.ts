@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -66,9 +65,6 @@ export class ApplicantsService {
 
   async updateRequest(id: string, status: ApplicantRequestStatus) {
     const request = await this.getRequestById(id);
-    if (!Object.values(ApplicantRequestStatus).includes(status))
-      throw new BadRequestException('Invalid status');
-
     request.status = status;
     await request.save();
 
@@ -132,10 +128,15 @@ export class ApplicantsService {
     result.total = rentals.length;
     result.rentals = rentals.map((rental) => {
       return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         tool: getToolInfo.call(rental.tool),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         renter: getUserPublicProfil.call(rental.renter),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         status: rental.status,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         start_date: rental.start_date.toISOString(),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         end_date: rental.end_date.toISOString(),
       };
     });

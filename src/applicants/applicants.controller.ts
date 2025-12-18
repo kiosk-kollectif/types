@@ -21,6 +21,7 @@ import { PermissionLevel } from 'src/common/decorator/permission-level.decorator
 import * as usersSchema from 'src/users/users.schema';
 import { ApplicantRequestStatus, UserRole } from 'src/types';
 import { User } from 'src/users/users.decorator';
+import { ApplicantRequestUpdateRequestQueryDto } from './dto/applicant-request-update-request.dto';
 
 @ApiTags('Gerer les requetes des deposant')
 @Controller('applicants')
@@ -87,9 +88,9 @@ export class ApplicantsController {
   @ApiOkResponse({ description: 'Requete modifiée' })
   async updateRequest(
     @Param('id') id: string,
-    @Query('status') status: ApplicantRequestStatus,
+    @Query() query: ApplicantRequestUpdateRequestQueryDto,
   ) {
-    const request = await this.applicantService.updateRequest(id, status);
+    const request = await this.applicantService.updateRequest(id, query.status);
 
     return {
       StatusCode: HttpStatus.OK,

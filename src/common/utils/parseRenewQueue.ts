@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { ApplicantRequestDocument } from 'src/applicants/applicants.schema';
 import { type ToolDocument } from 'src/tools/tools.schema';
 import { PendingRequest } from 'src/types/admins';
@@ -18,6 +19,7 @@ export function parseRenewQueue(
       pendingRequest.push({
         type: 'applicant_request',
         user: request.user_id.getUserProfil(),
+        request_id: (request._id as Types.ObjectId).toString(),
         createdAt: request.createdAt.toString(),
       });
     }
