@@ -78,11 +78,11 @@ export class AdminsService {
 
   async updateUser(id: string, updateDto: UpdateUserDto) {
     const user = await this.userservice.getUserById(id);
-    await Promise.all([
-      this.userservice.editUserInfo(user, updateDto),
-      this.userservice.editUserProfile(user, updateDto.profile ?? {}),
-    ]);
-    if (updateDto.active) {
+
+    await this.userservice.editUserInfo(user, updateDto);
+    if (updateDto.profile)
+      await this.userservice.editUserProfile(user, updateDto.profile);
+    if (updateDto.active !== undefined) {
       user.active = updateDto.active;
       await user.save();
     }
