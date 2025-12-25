@@ -30,7 +30,7 @@ import { sendPasswordResetMail } from 'src/common/utils/mailers';
 import { EditUserInfoDto } from './dto/edit-user-info.dto';
 import sharp from 'sharp';
 import { uploadFile } from 'src/common/utils/cloudinary';
-import { UserStats } from 'src/types';
+import { UserRole, UserStats } from 'src/types';
 import { InvalidesTokenService } from 'src/invalides-token/invalides-token.service';
 import { ReservationsService } from 'src/reservations/reservations.service';
 import { GetUsersQueryRequestDto } from './dto/get-users.dto';
@@ -69,7 +69,10 @@ export class UsersService {
 
     const [users, total] = await Promise.all([
       this.userModel
-        .find({ ...searchQuery })
+        .find({
+          ...searchQuery,
+          role: { $nin: [UserRole.ADMIN, UserRole.MANAGER] },
+        })
         .skip(skip)
         .limit(request.limit),
       this.userModel.countDocuments(searchQuery),

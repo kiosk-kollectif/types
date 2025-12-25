@@ -42,6 +42,9 @@ export class User {
   @Prop({ unique: true, required: true })
   email: string;
 
+  @Prop({ required: true, default: false })
+  active: boolean;
+
   @Prop({ required: true })
   passwordHash: string;
 
@@ -88,8 +91,11 @@ export function getUserPublicProfil(this: UserDocument): UserPublicInfo {
 UserSchema.methods.getUserPublicProfil = getUserPublicProfil;
 
 export function getUserProfil(this: UserDocument): UserInfo {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const info = getUserPublicProfil.call(this);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
+    active: this.active,
     ...info,
     profil: this.profil
       ? {
