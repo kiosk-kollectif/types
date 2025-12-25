@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 
 export class EditUserProfilDto {
+  @IsOptional()
   @ApiProperty({
     required: false,
     example: 'John',
@@ -8,6 +10,8 @@ export class EditUserProfilDto {
   })
   readonly lastname?: string;
 
+  @IsOptional()
+  @IsString()
   @ApiProperty({
     required: false,
     example: 'Doe',
@@ -15,6 +19,8 @@ export class EditUserProfilDto {
   })
   readonly firstname?: string;
 
+  @IsOptional()
+  @IsString()
   @ApiProperty({
     required: false,
     example: 'Lome- kegue',
@@ -22,6 +28,8 @@ export class EditUserProfilDto {
   })
   readonly adress?: string;
 
+  @IsOptional()
+  @IsString()
   @ApiProperty({
     required: false,
     example: '0909090909',
@@ -29,6 +37,8 @@ export class EditUserProfilDto {
   })
   readonly phone?: string;
 
+  @IsOptional()
+  @IsString()
   @ApiProperty({
     required: false,
     description: 'designe si une photo de profil doit etre retiree',

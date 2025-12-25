@@ -1,8 +1,17 @@
-import { Controller, Get, HttpStatus, Param, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
 import { UserRole } from 'src/types';
 import { AdminsService } from './admins.service';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('admins')
 export class AdminsController {
@@ -32,6 +41,18 @@ export class AdminsController {
       StatusCode: HttpStatus.OK,
       message: 'success',
       data: { ...stats },
+    };
+  }
+
+  @PermissionLevel([UserRole.ADMIN, UserRole.MANAGER])
+  @Post('/users/:id/update')
+  @ApiOperation({ summary: "mettre a jour les donnees d'un utilisateur" })
+  async updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
+    const user = await this.adminsService.updateUser(id, body);
+    return {
+      StatusCode: HttpStatus.OK,
+      message: 'success',
+      data: { user },
     };
   }
 

@@ -10,6 +10,7 @@ import { ReservationsService } from 'src/reservations/reservations.service';
 import { Tool, ToolDocument, type ToolModel } from 'src/tools/tools.schema';
 import { ApplicantRequestStatus, ToolRequestStatus } from 'src/types';
 import { UsersService } from 'src/users/users.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class AdminsService {
@@ -73,6 +74,20 @@ export class AdminsService {
     };
 
     return userStats;
+  }
+
+  async updateUser(id: string, updateDto: UpdateUserDto) {
+    const user = await this.userservice.getUserById(id);
+    await Promise.all([
+      this.userservice.editUserInfo(user, updateDto),
+      this.userservice.editUserProfile(user, updateDto.profile ?? {}),
+    ]);
+    if (updateDto.active) {
+      user.active = updateDto.active;
+      await user.save();
+    }
+
+    return user.getUserProfil();
   }
 
   async getToolsStats(id: string) {

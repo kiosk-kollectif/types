@@ -56,8 +56,7 @@ export class UsersService {
 
   async getUsers(request: GetUsersQueryRequestDto) {
     const searchQuery: RootFilterQuery<UserDocument> = {};
-    if (request.status) searchQuery.status = request.status;
-    if (request.role) searchQuery.role = request.role;
+    if (request.status) searchQuery.active = request.status == 'active';
     if (request.search) {
       searchQuery.$or = [
         { username: { $regex: request.search, $options: 'i' } },
@@ -65,17 +64,28 @@ export class UsersService {
       ];
     }
 
+    const roleFilter: RootFilterQuery<UserDocument> = {};
+    if (
+      request.role &&
+      [UserRole.ADMIN, UserRole.MANAGER].includes(request.role)
+    )
+      throw new UnauthorizedException('You cannot request for this role');
+
+    roleFilter.role = request.role
+      ? request.role
+      : { $nin: [UserRole.ADMIN, UserRole.MANAGER] };
+
     const skip = (request.page - 1) * request.limit;
 
     const [users, total] = await Promise.all([
       this.userModel
         .find({
           ...searchQuery,
-          role: { $nin: [UserRole.ADMIN, UserRole.MANAGER] },
+          ...roleFilter,
         })
         .skip(skip)
         .limit(request.limit),
-      this.userModel.countDocuments(searchQuery),
+      this.userModel.countDocuments({ ...searchQuery, ...roleFilter }),
     ]);
 
     const totalPages = Math.ceil(total / request.limit);
