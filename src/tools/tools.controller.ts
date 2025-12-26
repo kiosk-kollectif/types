@@ -30,6 +30,7 @@ import { ToolPublicInfo, UserRole } from 'src/types';
 import { UpdateToolDto } from './dto/udate-tool-dto';
 import { GetToolByIds } from './dto/get-tools-by-ids.dto';
 import { ApiGlobalResponse } from 'src/common/types';
+import { GetToolQueryDto } from './dto/get-tools.dto';
 
 @ApiTags('Tools')
 @Controller('tools')
@@ -37,6 +38,7 @@ export class ToolsController {
   constructor(private readonly toolsService: ToolsService) {}
 
   @Get('/')
+  @PermissionLevel([])
   @ApiOperation({ summary: 'Recuperer la liste des outils acceptes' })
   @ApiOkResponse({
     description: 'Requete valider',
@@ -51,19 +53,10 @@ export class ToolsController {
     },
   })
   async getTools(
-    @Query('query') query?: string,
-    @Query('category') category?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('availableOnly') availableOnly?: string,
+    @Query() getToolsQueryDto: GetToolQueryDto,
+    @User() user?: usersSchema.UserDocument,
   ) {
-    const toolsData = await this.toolsService.getTools(
-      query,
-      category,
-      availableOnly === 'true',
-      Number(page),
-      Number(limit),
-    );
+    const toolsData = await this.toolsService.getTools(getToolsQueryDto, user);
 
     return {
       StatusCode: HttpStatus.OK,

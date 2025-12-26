@@ -16,6 +16,8 @@ export const User = createParamDecorator(
       .getRequest();
     const user = request.user;
 
+    if (!user) return undefined;
+
     if (data) {
       if (data in user) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return

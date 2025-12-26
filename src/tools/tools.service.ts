@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   BadRequestException,
   Injectable,
@@ -19,16 +18,12 @@ import { uploadFile } from 'src/common/utils/cloudinary';
 import sharp from 'sharp';
 import { ToolsCategoriesService } from 'src/tools-categories/tools-categories.service';
 import { UserDocument } from 'src/users/users.schema';
-import {
-  ToolPublicInfo,
-  ToolRequestStatus,
-  UserRole,
-  type Tool as ToolInfo,
-} from '../types';
+import { ToolRequestStatus, UserRole, type Tool as ToolInfo } from '../types';
 import { sameObjectId } from 'src/common/utils/sameObjectId';
 import { GetToolByIds } from './dto/get-tools-by-ids.dto';
 import { ReservationsService } from 'src/reservations/reservations.service';
 import { UpdateToolDto } from './dto/udate-tool-dto';
+import { GetToolQueryDto } from './dto/get-tools.dto';
 
 @Injectable()
 export class ToolsService {
@@ -39,15 +34,29 @@ export class ToolsService {
   ) {}
 
   async getTools(
-    query?: string,
-    category?: string,
-    availableOnly?: boolean,
-    page: number = 1,
-    limit: number = 10,
-  ): Promise<{ page: number; totalPages: number; tools: ToolPublicInfo[] }> {
-    const searchOptions: RootFilterQuery<ToolDocument> = {
-      status: ToolRequestStatus.ACCEPTED,
-    };
+    {
+      query,
+      category,
+      availableOnly,
+      status,
+      page = 1,
+      limit = 10,
+    }: GetToolQueryDto,
+    user?: UserDocument,
+  ) {
+    const searchOptions: RootFilterQuery<ToolDocument> = {};
+
+    // fILTER Les outils en cas de requetes venant d'un non admin
+    if (!user || ![UserRole.ADMIN, UserRole.MANAGER].includes(user.role)) {
+      searchOptions.status = ToolRequestStatus.ACCEPTED;
+    }
+
+    // en cas de requete de status , verifier si les permission
+    if (status) {
+      if (!user || ![UserRole.ADMIN, UserRole.MANAGER].includes(user.role))
+        throw new UnauthorizedException("You're not allod to request status");
+      searchOptions.status = status;
+    }
 
     if (query) searchOptions.name = { $regex: new RegExp(query, 'i') };
     if (category)
@@ -58,72 +67,77 @@ export class ToolsService {
     const currentPage = Math.min(page, totalPages);
     const skip = (currentPage - 1) * limit;
 
-    const result = await this.toolModel.aggregate([
-      { $match: searchOptions },
-      { $skip: skip },
-      { $limit: limit },
-      {
-        // Recuperer les reservations
-        $lookup: {
-          from: 'reservations',
-          localField: '_id',
-          foreignField: 'tool_id',
-          as: 'reservations',
+    const [result, totalItems] = await Promise.all([
+      this.toolModel.aggregate([
+        { $match: searchOptions },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          // Recuperer les reservations
+          $lookup: {
+            from: 'reservations',
+            localField: '_id',
+            foreignField: 'tool_id',
+            as: 'reservations',
+          },
         },
-      },
-      // Filter les outils qui ne sont pas en reservations du quotidien
-      {
-        $match: {
-          ...(availableOnly && {
-            reservations: {
-              $not: {
-                $elemMatch: {
-                  start_date: {
-                    $lte: new Date(),
-                  },
-                  end_date: {
-                    $gte: new Date(),
+        // Filter les outils qui ne sont pas en reservations du quotidien
+        {
+          $match: {
+            ...(availableOnly && {
+              reservations: {
+                $not: {
+                  $elemMatch: {
+                    start_date: {
+                      $lte: new Date(),
+                    },
+                    end_date: {
+                      $gte: new Date(),
+                    },
                   },
                 },
               },
-            },
-          }),
+            }),
+          },
         },
-      },
-      {
-        // Recuperer les categories
-        $lookup: {
-          from: 'tools-categories',
-          localField: 'categories',
-          foreignField: '_id',
-          as: 'categories',
+        {
+          // Recuperer les categories
+          $lookup: {
+            from: 'tools-categories',
+            localField: 'categories',
+            foreignField: '_id',
+            as: 'categories',
+          },
         },
-      },
-      // Recuperer les locations
-      {
-        $lookup: {
-          from: 'warehouses',
-          localField: 'location',
-          foreignField: '_id',
-          as: 'location',
+        // Recuperer les locations
+        {
+          $lookup: {
+            from: 'warehouses',
+            localField: 'location',
+            foreignField: '_id',
+            as: 'location',
+          },
         },
-      },
-      { $unwind: { path: '$location', preserveNullAndEmptyArrays: true } },
-      //Recuperer les infos utilisateurs
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'owner_id',
-          foreignField: '_id',
-          as: 'owner_id',
+        { $unwind: { path: '$location', preserveNullAndEmptyArrays: true } },
+        //Recuperer les infos utilisateurs
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'owner_id',
+            foreignField: '_id',
+            as: 'owner_id',
+          },
         },
-      },
-      { $unwind: { path: '$owner_id', preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: '$owner_id', preserveNullAndEmptyArrays: true } },
+      ]),
+      this.toolModel.countDocuments(searchOptions),
     ]);
 
     return {
-      page: currentPage,
+      currentPage,
       totalPages,
+      totalItems,
+      limit,
       tools: result.map((tool) => getToolsPublicInfo.call(tool)),
     };
   }

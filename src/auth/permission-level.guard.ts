@@ -27,7 +27,7 @@ export class PermissionLevelGuard implements CanActivate {
       context.getHandler(),
     );
 
-    if (!permissionLevel) return true;
+    if (!permissionLevel || permissionLevel.length === 0) return true;
 
     const req: Request = context.switchToHttp().getRequest();
 
@@ -39,7 +39,8 @@ export class PermissionLevelGuard implements CanActivate {
       const user = await this.userModel.findById(playload.id);
       if (!user) return false;
       existsUser = user;
-    } catch (_) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
       return false;
     }
 
