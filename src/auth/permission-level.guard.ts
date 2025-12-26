@@ -27,7 +27,7 @@ export class PermissionLevelGuard implements CanActivate {
       context.getHandler(),
     );
 
-    if (!permissionLevel || permissionLevel.length === 0) return true;
+    if (!permissionLevel) return true;
 
     const req: Request = context.switchToHttp().getRequest();
 
@@ -45,7 +45,9 @@ export class PermissionLevelGuard implements CanActivate {
     }
 
     req.user = existsUser;
-    return permissionLevel.includes(existsUser.role);
+    return permissionLevel.length > 0
+      ? permissionLevel.includes(existsUser.role)
+      : true;
   }
 
   private async getPermissionLevel(req: Request) {

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
+  getToolInfo,
   getToolsPublicInfo,
   Tool,
   ToolDocument,
@@ -35,7 +36,7 @@ export class ToolsService {
 
   async getTools(
     {
-      query,
+      search,
       category,
       availableOnly,
       status,
@@ -58,7 +59,7 @@ export class ToolsService {
       searchOptions.status = status;
     }
 
-    if (query) searchOptions.name = { $regex: new RegExp(query, 'i') };
+    if (search) searchOptions.name = { $regex: new RegExp(search, 'i') };
     if (category)
       searchOptions.categories = { $in: [new Types.ObjectId(category)] };
 
@@ -133,12 +134,18 @@ export class ToolsService {
       this.toolModel.countDocuments(searchOptions),
     ]);
 
+    // retourner les infos outils en fonctions des permissions
+    const tools =
+      user && [UserRole.ADMIN, UserRole.MANAGER].includes(user.role)
+        ? result.map((tool) => getToolInfo.call(tool))
+        : result.map((tool) => getToolsPublicInfo.call(tool));
+
     return {
       currentPage,
       totalPages,
       totalItems,
       limit,
-      tools: result.map((tool) => getToolsPublicInfo.call(tool)),
+      tools,
     };
   }
 

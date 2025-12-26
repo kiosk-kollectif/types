@@ -11,7 +11,7 @@ import { ToolRequestStatus } from 'src/types';
 export class GetToolQueryDto {
   @IsString()
   @IsOptional()
-  query?: string;
+  search?: string;
 
   @IsString()
   @IsOptional()
