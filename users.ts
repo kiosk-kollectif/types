@@ -21,7 +21,7 @@ export enum UserRole {
 }
 
 export type User = Omit<UserPublicInfo, 'profil'> & {
-  active: true;
+  active: boolean;
   profil?: {
     picture?: string;
     thumbnail?: string;

@@ -1,5 +1,5 @@
 import { ToolPublicInfo } from "./tools";
-import { UserPublicInfo } from "./users";
+import { User } from "./users";
 
 export enum ReservationRequestStatus {
   PENDING = 'en cours',
@@ -11,7 +11,7 @@ export enum ReservationRequestStatus {
 export interface Reservation {
   id: string;
   tool: ToolPublicInfo;
-  renter: UserPublicInfo;
+  renter: User;
   start_date: string;
   end_date: string;
   status: ReservationRequestStatus;
