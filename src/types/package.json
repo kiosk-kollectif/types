@@ -6,7 +6,8 @@
   "types": "./index.d.ts",
   "scripts": {
     "build": "tsc",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "postinstall": "npm run build"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
