@@ -9,27 +9,39 @@ export type ReservationDocument = Reservation & Document;
 @Schema({ versionKey: false, timestamps: true, collection: 'reservations' })
 export class Reservation {
   @Prop({ required: true, type: Types.ObjectId, ref: Tool.name })
-  tool_id: Types.ObjectId;
+  tool_id!: Types.ObjectId;
 
   @Prop({ required: true, type: Types.ObjectId, ref: User.name })
-  renter_id: Types.ObjectId;
+  renter_id!: Types.ObjectId;
 
   @Prop({ required: true, type: Date })
-  start_date: Date;
+  start_date!: Date;
 
   @Prop({ required: true, type: Date })
-  end_date: Date;
+  end_date!: Date;
 
   @Prop({
     required: true,
     default: ReservationRequestStatus.PENDING,
     enum: ReservationRequestStatus,
   })
-  status: ReservationRequestStatus;
+  status!: ReservationRequestStatus;
 
-  _id: Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
+  @Prop({
+    type: [
+      {
+        status: String,
+        changedAt: { type: Date, default: Date.now },
+        note: String,
+      },
+    ],
+    default: [],
+  })
+  history!: { status: string; changedAt: Date; note?: string }[];
+
+  _id!: Types.ObjectId;
+  createdAt!: Date;
+  updatedAt!: Date;
 }
 
 export const ReservationDocumentSchema =

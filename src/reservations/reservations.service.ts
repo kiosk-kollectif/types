@@ -6,10 +6,15 @@ import {
 import { UserDocument } from 'src/users/users.schema';
 import { PostReservationDto } from './dto/post-reservation.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { Reservation, ReservationDocument } from './resevations.schema';
-import { ReservationRequestStatus, ToolPublicInfo, UserStats } from 'src/types';
-import { getToolsPublicInfo } from 'src/tools/tools.schema';
+import {
+  ReservationRequestStatus,
+  ToolPublicInfo,
+  UserStats,
+  type Reservation as ReservationType,
+} from 'src/types';
+import { getToolsPublicInfo, ToolDocument } from 'src/tools/tools.schema';
 
 @Injectable()
 export class ReservationsService {
@@ -81,6 +86,14 @@ export class ReservationsService {
           renter_id: new Types.ObjectId(user._id),
           start_date: new Date(tool.startDate),
           end_date: new Date(tool.endDate),
+          status: ReservationRequestStatus.PENDING,
+          history: [
+            {
+              status: ReservationRequestStatus.PENDING,
+              changedAt: new Date(),
+              note: 'Réservation créée',
+            },
+          ],
         };
       }),
     );
@@ -118,5 +131,130 @@ export class ReservationsService {
     return await this.reservationsModel.find({
       renter_id: new Types.ObjectId(user_id),
     });
+  }
+
+  async findAll(query: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: ReservationRequestStatus;
+  }): Promise<{
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
+    reservations: ReservationType[];
+  }> {
+    const { page = 1, limit = 10, search, status } = query;
+    const filter: FilterQuery<Reservation> = {};
+
+    if (status) {
+      filter.status = status;
+    }
+
+    // Pour le search, on pourrait avoir besoin de join avec tools ou users
+    // Mais pour rester simple et performant, on peut faire un aggregate
+    const aggregate = this.reservationsModel.aggregate([
+      {
+        $lookup: {
+          from: 'tools',
+          localField: 'tool_id',
+          foreignField: '_id',
+          as: 'tool',
+        },
+      },
+      { $unwind: '$tool' },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'renter_id',
+          foreignField: '_id',
+          as: 'renter',
+        },
+      },
+      { $unwind: '$renter' },
+    ]);
+
+    if (search) {
+      aggregate.match({
+        $or: [
+          { 'tool.name': { $regex: search, $options: 'i' } },
+          { 'renter.username': { $regex: search, $options: 'i' } },
+          { 'renter.email': { $regex: search, $options: 'i' } },
+        ],
+      });
+    }
+
+    if (status) {
+      aggregate.match({ status });
+    }
+
+    const totalItems = (await aggregate.exec()).length;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // Types pour l'agrégation
+    interface ReservationResult {
+      _id: Types.ObjectId;
+      tool: ToolDocument;
+      renter: UserDocument;
+      start_date: Date;
+      end_date: Date;
+      status: ReservationRequestStatus;
+      createdAt: Date;
+    }
+
+    const results = (await aggregate
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .exec()) as ReservationResult[];
+
+    const reservations = results.map(
+      (res): ReservationType => ({
+        id: res._id.toString(),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        tool: getToolsPublicInfo.call(res.tool),
+        renter: {
+          id: res.renter._id.toString(),
+          username: res.renter.username,
+          email: res.renter.email,
+          role: res.renter.role,
+          verified: res.renter.verified,
+          active: res.renter.active,
+          profil: res.renter.profil,
+          createdAt: res.renter.createdAt.toISOString(),
+          memberSince: res.renter.createdAt.toISOString(),
+        },
+        start_date: res.start_date.toISOString(),
+        end_date: res.end_date.toISOString(),
+        status: res.status as unknown as ReservationRequestStatus,
+        createdAt: res.createdAt.toISOString(),
+      }),
+    );
+
+    return {
+      totalItems,
+      totalPages,
+      currentPage: page,
+      limit,
+      reservations,
+    };
+  }
+
+  async updateStatus(
+    id: string,
+    status: ReservationRequestStatus,
+    note?: string,
+  ) {
+    const reservation = await this.reservationsModel.findById(id);
+    if (!reservation) throw new BadRequestException('Reservation not found');
+
+    reservation.status = status;
+    reservation.history.push({
+      status,
+      changedAt: new Date(),
+      note,
+    });
+    return await reservation.save();
   }
 }

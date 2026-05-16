@@ -2,21 +2,21 @@ import { ApiProperty } from '@nestjs/swagger';
 
 class ToolsRentalDetail {
   @ApiProperty({ required: true })
-  toolId: string;
+  toolId!: string;
 
   @ApiProperty({
     required: true,
     type: String,
     example: '2025-12-01T10:00:00.000Z',
   })
-  startDate: string;
+  startDate!: string;
 
   @ApiProperty({
     required: true,
     type: String,
     example: '2025-12-01T10:00:00.000Z',
   })
-  endDate: string;
+  endDate!: string;
 }
 
 export class PostReservationDto {
@@ -24,5 +24,5 @@ export class PostReservationDto {
     required: true,
     type: [ToolsRentalDetail],
   })
-  tools: ToolsRentalDetail[];
+  tools!: ToolsRentalDetail[];
 }
