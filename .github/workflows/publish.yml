@@ -2,8 +2,8 @@ name: Publish to npm
 
 on:
   push:
-    branches:
-      - 'master'
+    tags:
+      - 'v*'
 
 jobs:
   publish:
@@ -24,7 +24,7 @@ jobs:
         run: npm install
 
       - name: Build package
-        run: npm run build # <-- Ajouter cette étape
+        run: npm run build
 
       - name: Publish package
         run: npm publish --access public
