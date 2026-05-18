@@ -1,13 +1,12 @@
 {
   "name": "kiosk-shared-types",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "commonjs",
   "main": "./index.js",
   "types": "./index.d.ts",
   "scripts": {
     "build": "tsc",
-    "type-check": "tsc --noEmit",
-    "postinstall": "npm run build"
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
