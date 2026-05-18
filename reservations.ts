@@ -1,5 +1,5 @@
-import { ToolPublicInfo } from "./tools";
-import { User } from "./users";
+import { ToolPublicInfo } from './tools';
+import { User } from './users';
 
 export enum ReservationRequestStatus {
   PENDING = 'en cours',
