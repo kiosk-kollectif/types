@@ -34,6 +34,7 @@ import { UserRole, UserStats } from 'src/types';
 import { InvalidesTokenService } from 'src/invalides-token/invalides-token.service';
 import { ReservationsService } from 'src/reservations/reservations.service';
 import { GetUsersQueryRequestDto } from './dto/get-users.dto';
+import { mapUserToInfo, mapUserToPublicInfo } from './users.mapper';
 
 @Injectable()
 export class UsersService {
@@ -91,7 +92,7 @@ export class UsersService {
     const totalPages = Math.ceil(total / request.limit);
 
     return {
-      users: users.map((u) => u.getUserProfil()),
+      users: users.map((u) => mapUserToInfo(u)),
       currentPage: request.page,
       totalPages,
       limit: request.limit,
@@ -118,7 +119,7 @@ export class UsersService {
       passwordHash: password ? hashPassword(password) : null,
     });
 
-    const token = this.authService.signToken(newUser.getUserPublicProfil());
+    const token = this.authService.signToken(mapUserToPublicInfo(newUser));
 
     return token;
   }
@@ -138,7 +139,7 @@ export class UsersService {
       throw new BadRequestException('Invalid password');
     }
 
-    const token = this.authService.signToken(exist.getUserPublicProfil());
+    const token = this.authService.signToken(mapUserToPublicInfo(exist));
 
     return token;
   }
@@ -189,8 +190,8 @@ export class UsersService {
     await user.save();
 
     return {
-      user: { ...user.getUserPublicProfil(), profil: user.profil },
-      token: this.authService.signToken(user.getUserPublicProfil()),
+      user: mapUserToInfo(user),
+      token: this.authService.signToken(mapUserToPublicInfo(user)),
     };
   }
 
@@ -235,8 +236,8 @@ export class UsersService {
 
     await user.save();
     return {
-      user: { ...user.getUserPublicProfil(), profil: user.profil },
-      token: this.authService.signToken(user.getUserPublicProfil()),
+      user: mapUserToInfo(user),
+      token: this.authService.signToken(mapUserToPublicInfo(user)),
     };
   }
 
@@ -245,7 +246,7 @@ export class UsersService {
   }
 
   generateUserToken(user: UserDocument) {
-    return this.authService.signToken(user.getUserPublicProfil());
+    return this.authService.signToken(mapUserToPublicInfo(user));
   }
 
   async disconnectUser(token: string) {

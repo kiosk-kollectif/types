@@ -22,5 +22,6 @@ import { ReservationsModule } from 'src/reservations/reservations.module';
   ],
   controllers: [ToolsController],
   providers: [ToolsService],
+  exports: [ToolsService],
 })
 export class ToolsModule {}

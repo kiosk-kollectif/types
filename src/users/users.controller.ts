@@ -31,6 +31,7 @@ import { User as UserInfo, UserRole } from 'src/types';
 import { InvalidateToken } from 'src/common/decorator/invalidate-token.decorator';
 import type { ApiGlobalResponse } from 'src/common/types';
 import { GetUsersQueryRequestDto } from './dto/get-users.dto';
+import { mapUserToInfo } from './users.mapper';
 
 @ApiTags('Users')
 @Controller('users')
@@ -126,7 +127,7 @@ export class UsersController {
     description: 'Utilisateur récupéré avec succès',
   })
   getUserById(@User() user: usersSchema.UserDocument) {
-    const userInfo: UserInfo = user.getUserProfil();
+    const userInfo: UserInfo = mapUserToInfo(user);
 
     return {
       statusCode: HttpStatus.OK,

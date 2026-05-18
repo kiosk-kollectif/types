@@ -3,6 +3,8 @@ import { ApplicantRequestDocument } from 'src/applicants/applicants.schema';
 import { type ToolDocument } from 'src/tools/tools.schema';
 import { PendingRequest } from 'src/types/admins';
 import { UserDocument } from 'src/users/users.schema';
+import { mapToolToInfo, PopulatedTool } from 'src/tools/tools.mapper';
+import { mapUserToInfo } from 'src/users/users.mapper';
 
 export function parseRenewQueue(
   queue: (ToolDocument | ApplicantRequestDocument)[],
@@ -12,13 +14,13 @@ export function parseRenewQueue(
     if (isToolRequest(request)) {
       pendingRequest.push({
         type: 'tool_request',
-        tool: request.getInfo(),
+        tool: mapToolToInfo(request as unknown as PopulatedTool),
         createdAt: request.createdAt.toString(),
       });
     } else if (isApplicantRequest(request)) {
       pendingRequest.push({
         type: 'applicant_request',
-        user: request.user_id.getUserProfil(),
+        user: mapUserToInfo(request.user_id),
         request_id: (request._id as Types.ObjectId).toString(),
         createdAt: request.createdAt.toString(),
       });

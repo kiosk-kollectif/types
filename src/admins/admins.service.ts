@@ -1,43 +1,35 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import {
-  ApplicantRequest,
-  ApplicantRequestDocument,
-} from 'src/applicants/applicants.schema';
 import { parseRenewQueue } from 'src/common/utils/parseRenewQueue';
 import { ReservationsService } from 'src/reservations/reservations.service';
-import { Tool, ToolDocument, type ToolModel } from 'src/tools/tools.schema';
-import { ApplicantRequestStatus, ToolRequestStatus } from 'src/types';
+import { ToolsService } from 'src/tools/tools.service';
+import { ApplicantsService } from 'src/applicants/applicants.service';
+import { ApplicantRequestStatus } from 'src/types';
 import { UsersService } from 'src/users/users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ToolDocument } from 'src/tools/tools.schema';
+import { ApplicantRequestDocument } from 'src/applicants/applicants.schema';
+import { mapUserToInfo } from 'src/users/users.mapper';
+import { mapToolToInfo, PopulatedTool } from 'src/tools/tools.mapper';
 
 @Injectable()
 export class AdminsService {
   constructor(
     private readonly userservice: UsersService,
     private readonly reservationsService: ReservationsService,
-    @InjectModel(Tool.name) private readonly toolModel: ToolModel,
-    @InjectModel(ApplicantRequest.name)
-    private appliquantRequestModel: Model<ApplicantRequestDocument>,
+    private readonly toolsService: ToolsService,
+    private readonly applicantsService: ApplicantsService,
   ) {}
+
   async getReviewQueue(page: number, limit: number) {
     const [tools, applicants] = await Promise.all([
-      this.toolModel
-        .find({ status: ToolRequestStatus.PENDING })
-        .populate('owner_id')
-        .populate('categories')
-        .populate('location'),
-      this.appliquantRequestModel
-        .find({
-          status: ApplicantRequestStatus.PENDING,
-        })
-        .populate('user_id'),
+      this.toolsService.getPendingTools(),
+      this.applicantsService.getRequests(ApplicantRequestStatus.PENDING),
     ]);
 
-    const pendingRequest = [...tools, ...applicants].sort(
-      (i, j) => j.createdAt.getTime() - i.createdAt.getTime(),
-    ) as (ToolDocument | ApplicantRequestDocument)[];
+    const pendingRequest: (ToolDocument | ApplicantRequestDocument)[] = [
+      ...tools,
+      ...applicants,
+    ].sort((i, j) => j.createdAt.getTime() - i.createdAt.getTime());
 
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
@@ -53,32 +45,25 @@ export class AdminsService {
   }
 
   async getUsersStats(id: string) {
-    // Recuperer les infos utilisateur
     const user = await this.userservice.getUserById(id);
-    // Recuperer les outils de l'utilisateur
-    const userTool = await this.toolModel.find({
-      owner_id: new Types.ObjectId(id),
-    });
-    // recuprer les reservations de l'utilisateur
+    const userTool = await this.toolsService.getToolsByOwner(user);
     const userReservations =
-      await this.reservationsService.revervationsForUser(id);
+      await this.reservationsService.getReservationsForUser(user);
 
-    const userStats = {
-      user: user.getUserProfil(),
+    return {
+      user: mapUserToInfo(user),
       tools: {
         length: userTool.length,
-        // Prendre 3 outils max
         name: userTool.map((t) => t.name).slice(0, 3),
       },
-      reservations: userReservations.length,
+      reservations: Array.isArray(userReservations)
+        ? userReservations.length
+        : 0,
     };
-
-    return userStats;
   }
 
   async updateUser(id: string, updateDto: UpdateUserDto) {
     const user = await this.userservice.getUserById(id);
-
     await this.userservice.editUserInfo(user, updateDto);
     if (updateDto.profile)
       await this.userservice.editUserProfile(user, updateDto.profile);
@@ -87,20 +72,20 @@ export class AdminsService {
       await user.save();
     }
 
-    return user.getUserProfil();
+    return mapUserToInfo(user);
   }
 
   async getToolsStats(id: string) {
-    const tool = await this.toolModel
-      .findById(id)
-      .populate('owner_id')
-      .populate('categories')
-      .populate('location');
-
-    if (!tool) return new NotFoundException('Tool not found');
+    const tool = await this.toolsService.getToolById(id);
+    if (!tool) throw new NotFoundException('Tool not found');
     const toolsReservations =
       await this.reservationsService.getReservationsForItem(id);
 
-    return { tool: tool.getInfo(), reservations: toolsReservations.length };
+    return {
+      tool: mapToolToInfo(tool as unknown as PopulatedTool),
+      reservations: Array.isArray(toolsReservations)
+        ? toolsReservations.length
+        : 0,
+    };
   }
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import {
   BadRequestException,
   Injectable,
@@ -6,13 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  getToolInfo,
-  getToolsPublicInfo,
-  Tool,
-  ToolDocument,
-  type ToolModel,
-} from './tools.schema';
+import { Tool, ToolDocument, type ToolModel } from './tools.schema';
 import { RootFilterQuery, Types } from 'mongoose';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { uploadFile } from 'src/common/utils/cloudinary';
@@ -25,6 +18,11 @@ import { GetToolByIds } from './dto/get-tools-by-ids.dto';
 import { ReservationsService } from 'src/reservations/reservations.service';
 import { UpdateToolDto } from './dto/udate-tool-dto';
 import { GetToolQueryDto } from './dto/get-tools.dto';
+import {
+  mapToolToInfo,
+  mapToolToPublicInfo,
+  PopulatedTool,
+} from './tools.mapper';
 
 @Injectable()
 export class ToolsService {
@@ -137,8 +135,8 @@ export class ToolsService {
     // retourner les infos outils en fonctions des permissions
     const tools =
       user && [UserRole.ADMIN, UserRole.MANAGER].includes(user.role)
-        ? result.map((tool) => getToolInfo.call(tool))
-        : result.map((tool) => getToolsPublicInfo.call(tool));
+        ? (result as PopulatedTool[]).map((tool) => mapToolToInfo(tool))
+        : (result as PopulatedTool[]).map((tool) => mapToolToPublicInfo(tool));
 
     return {
       currentPage,
@@ -206,9 +204,10 @@ export class ToolsService {
       images: imagesLinks,
     });
 
+    await newTool.populate('owner_id');
     await newTool.populate('categories');
 
-    return newTool.getInfo();
+    return mapToolToInfo(newTool as unknown as PopulatedTool);
   }
 
   async getToolById(id: string) {
@@ -224,7 +223,7 @@ export class ToolsService {
       $match: { _id: { $in: ids.ids.map((id) => new Types.ObjectId(id)) } },
     });
 
-    return result.map((r) => getToolsPublicInfo.call(r));
+    return (result as PopulatedTool[]).map((r) => mapToolToPublicInfo(r));
   }
 
   async deleteItem(id: string) {
@@ -233,11 +232,30 @@ export class ToolsService {
     return deleted;
   }
 
+  async getPendingTools() {
+    return await this.toolModel
+      .find({ status: ToolRequestStatus.PENDING })
+      .populate('owner_id')
+      .populate('categories')
+      .populate('location');
+  }
+
+  async getToolsByOwner(user: UserDocument): Promise<ToolInfo[]> {
+    const tools = await this.toolModel
+      .find({ owner_id: user._id })
+      .populate('owner_id')
+      .populate('categories');
+
+    return (tools as unknown as PopulatedTool[]).map((tool) =>
+      mapToolToInfo(tool),
+    );
+  }
+
   async getToolBySlug(slug: string) {
     const tool = await this.toolModel.findAndJoin({ $match: { slug } });
 
     if (tool.length == 0) throw new NotFoundException('tool not found');
-    return getToolsPublicInfo.call(tool[0]);
+    return mapToolToPublicInfo(tool[0] as unknown as PopulatedTool);
   }
 
   async updateTool(
@@ -313,8 +331,9 @@ export class ToolsService {
     }
 
     await toolExist.save();
+    await toolExist.populate('owner_id');
     await toolExist.populate('categories');
 
-    return toolExist.getInfo();
+    return mapToolToInfo(toolExist as unknown as PopulatedTool);
   }
 }

@@ -6,15 +6,18 @@ import {
 import { UserDocument } from 'src/users/users.schema';
 import { PostReservationDto } from './dto/post-reservation.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Reservation, ReservationDocument } from './resevations.schema';
 import {
   ReservationRequestStatus,
-  ToolPublicInfo,
   UserStats,
   type Reservation as ReservationType,
 } from 'src/types';
-import { getToolsPublicInfo, ToolDocument } from 'src/tools/tools.schema';
+import { mapToolToPublicInfo, PopulatedTool } from 'src/tools/tools.mapper';
+import {
+  mapReservationToType,
+  PopulatedReservation,
+} from './reservations.mapper';
 
 @Injectable()
 export class ReservationsService {
@@ -102,11 +105,11 @@ export class ReservationsService {
   async getReservationsForUser(user: UserDocument): Promise<UserStats> {
     const result = await this.reservationsModel
       .find({ renter_id: user._id })
-      .populate('tool_id');
+      .populate<{ tool_id: PopulatedTool }>('tool_id');
 
     const tools_rented = result.map((v) => {
       return {
-        tool: getToolsPublicInfo.call(v.tool_id) as ToolPublicInfo,
+        tool: mapToolToPublicInfo(v.tool_id),
         status: v.status,
       };
     });
@@ -127,10 +130,40 @@ export class ReservationsService {
     };
   }
 
-  async revervationsForUser(user_id: string) {
-    return await this.reservationsModel.find({
-      renter_id: new Types.ObjectId(user_id),
-    });
+  async getReservationsForOwner(user: UserDocument) {
+    const rentals =
+      await this.reservationsModel.aggregate<PopulatedReservation>([
+        {
+          $lookup: {
+            from: 'tools',
+            localField: 'tool_id',
+            foreignField: '_id',
+            as: 'tool_id',
+          },
+        },
+        { $unwind: { path: '$tool_id', preserveNullAndEmptyArrays: true } },
+        {
+          $match: { 'tool_id.owner_id': user._id },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'renter_id',
+            foreignField: '_id',
+            as: 'renter_id',
+          },
+        },
+        { $unwind: { path: '$renter_id', preserveNullAndEmptyArrays: true } },
+      ]);
+
+    const result: {
+      total: number;
+      rentals: ReservationType[];
+    } = { total: rentals.length, rentals: [] };
+
+    result.rentals = rentals.map((rental) => mapReservationToType(rental));
+
+    return result;
   }
 
   async findAll(query: {
@@ -146,41 +179,35 @@ export class ReservationsService {
     reservations: ReservationType[];
   }> {
     const { page = 1, limit = 10, search, status } = query;
-    const filter: FilterQuery<Reservation> = {};
 
-    if (status) {
-      filter.status = status;
-    }
-
-    // Pour le search, on pourrait avoir besoin de join avec tools ou users
-    // Mais pour rester simple et performant, on peut faire un aggregate
+    // Construction de l'agrégation avec renommage pour correspondre à PopulatedReservation
     const aggregate = this.reservationsModel.aggregate([
       {
         $lookup: {
           from: 'tools',
           localField: 'tool_id',
           foreignField: '_id',
-          as: 'tool',
+          as: 'tool_id',
         },
       },
-      { $unwind: '$tool' },
+      { $unwind: '$tool_id' },
       {
         $lookup: {
           from: 'users',
           localField: 'renter_id',
           foreignField: '_id',
-          as: 'renter',
+          as: 'renter_id',
         },
       },
-      { $unwind: '$renter' },
+      { $unwind: '$renter_id' },
     ]);
 
     if (search) {
       aggregate.match({
         $or: [
-          { 'tool.name': { $regex: search, $options: 'i' } },
-          { 'renter.username': { $regex: search, $options: 'i' } },
-          { 'renter.email': { $regex: search, $options: 'i' } },
+          { 'tool_id.name': { $regex: search, $options: 'i' } },
+          { 'renter_id.username': { $regex: search, $options: 'i' } },
+          { 'renter_id.email': { $regex: search, $options: 'i' } },
         ],
       });
     }
@@ -192,45 +219,13 @@ export class ReservationsService {
     const totalItems = (await aggregate.exec()).length;
     const totalPages = Math.ceil(totalItems / limit);
 
-    // Types pour l'agrégation
-    interface ReservationResult {
-      _id: Types.ObjectId;
-      tool: ToolDocument;
-      renter: UserDocument;
-      start_date: Date;
-      end_date: Date;
-      status: ReservationRequestStatus;
-      createdAt: Date;
-    }
-
     const results = (await aggregate
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .exec()) as ReservationResult[];
+      .exec()) as PopulatedReservation[];
 
-    const reservations = results.map(
-      (res): ReservationType => ({
-        id: res._id.toString(),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        tool: getToolsPublicInfo.call(res.tool),
-        renter: {
-          id: res.renter._id.toString(),
-          username: res.renter.username,
-          email: res.renter.email,
-          role: res.renter.role,
-          verified: res.renter.verified,
-          active: res.renter.active,
-          profil: res.renter.profil,
-          createdAt: res.renter.createdAt.toISOString(),
-          memberSince: res.renter.createdAt.toISOString(),
-        },
-        start_date: res.start_date.toISOString(),
-        end_date: res.end_date.toISOString(),
-        status: res.status as unknown as ReservationRequestStatus,
-        createdAt: res.createdAt.toISOString(),
-      }),
-    );
+    const reservations = results.map((res) => mapReservationToType(res));
 
     return {
       totalItems,

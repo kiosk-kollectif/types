@@ -14,6 +14,7 @@ import { Model, Types } from 'mongoose';
 import { sendAccountConfirmationMail } from 'src/common/utils/mailers';
 import { UserDocument } from 'src/users/users.schema';
 import { AuthService } from 'src/auth/auth.service';
+import { mapUserToPublicInfo } from 'src/users/users.mapper';
 
 @Injectable()
 export class VerificationCodesService {
@@ -64,6 +65,6 @@ export class VerificationCodesService {
 
     user.verified = true;
     await user.save();
-    return this.jwtService.signToken(user.getUserPublicProfil());
+    return this.jwtService.signToken(mapUserToPublicInfo(user));
   }
 }

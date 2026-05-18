@@ -9,24 +9,18 @@ import {
   ApplicantRequestDocument,
 } from './applicants.schema';
 import { Model } from 'mongoose';
-import { getUserPublicProfil, UserDocument } from 'src/users/users.schema';
-import { ApplicantRequestStatus, UserPublicInfo } from 'src/types';
-import { getToolInfo, Tool, type ToolModel } from 'src/tools/tools.schema';
-import { Tool as ToolInfo } from 'src/types';
-import {
-  Reservation,
-  ReservationDocument,
-} from 'src/reservations/resevations.schema';
-import { ReservationRequestStatus } from 'src/types/reservations';
+import { UserDocument } from 'src/users/users.schema';
+import { ApplicantRequestStatus, Tool as ToolInfo } from 'src/types';
+import { ToolsService } from 'src/tools/tools.service';
+import { ReservationsService } from 'src/reservations/reservations.service';
 
 @Injectable()
 export class ApplicantsService {
   constructor(
     @InjectModel(ApplicantRequest.name)
     private readonly requestsModel: Model<ApplicantRequestDocument>,
-    @InjectModel(Tool.name) private readonly toolModel: ToolModel,
-    @InjectModel(Reservation.name)
-    private readonly reservationsModel: Model<ReservationDocument>,
+    private readonly toolsService: ToolsService,
+    private readonly reservationsService: ReservationsService,
   ) {}
 
   async getRequestById(id: string) {
@@ -81,66 +75,10 @@ export class ApplicantsService {
   }
 
   async getApplicantTools(user: UserDocument): Promise<ToolInfo[]> {
-    const tools = await this.toolModel
-      .find({ owner_id: user._id })
-      .populate('owner_id')
-      .populate('categories');
-
-    return tools.map((tool) => tool.getInfo());
+    return await this.toolsService.getToolsByOwner(user);
   }
 
   async getApplicantRentalsInfo(user: UserDocument) {
-    const rentals = await this.reservationsModel.aggregate([
-      {
-        $lookup: {
-          from: 'tools',
-          localField: 'tool_id',
-          foreignField: '_id',
-          as: 'tool',
-        },
-      },
-      { $unwind: { path: '$tool', preserveNullAndEmptyArrays: true } },
-      {
-        $match: { 'tool.owner_id': user._id },
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'renter_id',
-          foreignField: '_id',
-          as: 'renter',
-        },
-      },
-      { $unwind: { path: '$renter', preserveNullAndEmptyArrays: true } },
-    ]);
-
-    const result: {
-      total: number;
-      rentals: {
-        status: ReservationRequestStatus;
-        start_date: string;
-        end_date: string;
-        tool: ToolInfo;
-        renter: UserPublicInfo;
-      }[];
-    } = { total: 0, rentals: [] };
-
-    result.total = rentals.length;
-    result.rentals = rentals.map((rental) => {
-      return {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        tool: getToolInfo.call(rental.tool),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        renter: getUserPublicProfil.call(rental.renter),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        status: rental.status,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        start_date: rental.start_date.toISOString(),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        end_date: rental.end_date.toISOString(),
-      };
-    });
-
-    return result;
+    return await this.reservationsService.getReservationsForOwner(user);
   }
 }

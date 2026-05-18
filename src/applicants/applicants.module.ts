@@ -8,23 +8,21 @@ import {
 } from './applicants.schema';
 import { AuthModule } from 'src/auth/auth.module';
 import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
-import { Tool, ToolDocumentSchema } from 'src/tools/tools.schema';
-import {
-  Reservation,
-  ReservationDocumentSchema,
-} from 'src/reservations/resevations.schema';
+import { ToolsModule } from 'src/tools/tools.module';
+import { ReservationsModule } from 'src/reservations/reservations.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: ApplicantRequest.name, schema: ApplicantRequestSchema },
-      { name: Tool.name, schema: ToolDocumentSchema },
-      { name: Reservation.name, schema: ReservationDocumentSchema },
     ]),
     AuthModule,
     InvalidesTokenModule,
+    ToolsModule,
+    ReservationsModule,
   ],
   controllers: [ApplicantsController],
   providers: [ApplicantsService],
+  exports: [ApplicantsService],
 })
 export class ApplicantsModule {}
