@@ -40,6 +40,9 @@ export const mapUserToInfo = (doc: User): UserInfo => {
           thumbnail: doc.profil.thumbnail,
         }
       : undefined,
-    createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : new Date(doc.createdAt).toISOString(),
+    createdAt:
+      doc.createdAt instanceof Date
+        ? doc.createdAt.toISOString()
+        : new Date(doc.createdAt).toISOString(),
   };
 };

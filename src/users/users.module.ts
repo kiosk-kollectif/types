@@ -10,6 +10,7 @@ import {
 } from './reset-password-request.schema';
 import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
 import { ReservationsModule } from 'src/reservations/reservations.module';
+import { MailerModule } from 'src/mailer/mailer.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ReservationsModule } from 'src/reservations/reservations.module';
     AuthModule,
     InvalidesTokenModule,
     ReservationsModule,
+    MailerModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

@@ -1,4 +1,4 @@
-export type ApiGlobalResponse<T extends Object | undefined = undefined> = {
+export type ApiGlobalResponse<T = any> = {
   StatusCode: number;
   message?: string;
   data?: T;

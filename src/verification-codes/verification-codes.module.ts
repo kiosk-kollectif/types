@@ -8,6 +8,7 @@ import {
 } from './verification-codes.schema';
 import { AuthModule } from 'src/auth/auth.module';
 import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module';
+import { MailerModule } from 'src/mailer/mailer.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { InvalidesTokenModule } from 'src/invalides-token/invalides-token.module
     ]),
     AuthModule,
     InvalidesTokenModule,
+    MailerModule,
   ],
   controllers: [VerificationCodesController],
   providers: [VerificationCodesService],

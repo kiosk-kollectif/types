@@ -9,7 +9,7 @@ export class GetReservationsDto {
   @IsOptional()
   @IsString()
   limit?: string;
-  
+
   @IsOptional()
   @IsString()
   search?: string;

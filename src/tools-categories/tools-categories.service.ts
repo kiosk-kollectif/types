@@ -6,6 +6,7 @@ import {
 } from './tools-categories.schema';
 import { Model, Types } from 'mongoose';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { GlobalEditCategoryDto } from './dto/global-edit-category.dto';
 
 @Injectable()
 export class ToolsCategoriesService {
@@ -69,5 +70,30 @@ export class ToolsCategoriesService {
 
     await exists.save();
     return exists;
+  }
+
+  async batchUpdateCategories(dto: GlobalEditCategoryDto) {
+    if (dto.add) {
+      for (const cat of dto.add) {
+        await this.createCategory(cat);
+      }
+    }
+
+    if (dto.remove) {
+      for (const id of dto.remove) {
+        await this.deleteCategory(id);
+      }
+    }
+
+    if (dto.edit) {
+      for (const cat of dto.edit) {
+        await this.updateCategory(cat.id, {
+          name: cat.name,
+          description: cat.description,
+        });
+      }
+    }
+
+    return await this.getAllCategories();
   }
 }

@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateCategoryDto {
   @ApiProperty({ example: 'Electronique', description: 'Nom de la categorie' })
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({
     example: 'Categorie des appareils electroniques',

@@ -26,7 +26,7 @@ import {
   ResetPasswordRequestDocument,
 } from './reset-password-request.schema';
 import { randomBytes } from 'crypto';
-import { sendPasswordResetMail } from 'src/common/utils/mailers';
+import { MailerService } from 'src/mailer/mailer.service';
 import { EditUserInfoDto } from './dto/edit-user-info.dto';
 import sharp from 'sharp';
 import { uploadFile } from 'src/common/utils/cloudinary';
@@ -47,6 +47,7 @@ export class UsersService {
     private readonly authService: AuthService,
     private readonly invalidateTokenService: InvalidesTokenService,
     private readonly reservationService: ReservationsService,
+    private readonly mailerService: MailerService,
   ) {}
 
   private async getLastPasswordResetRequest(id: string | Types.ObjectId) {
@@ -55,7 +56,7 @@ export class UsersService {
       .sort({ createdAt: -1 });
   }
 
-  async getUsers(request: GetUsersQueryRequestDto) {
+  async getUsers(request: GetUsersQueryRequestDto, allowedRoles?: UserRole[]) {
     const searchQuery: RootFilterQuery<UserDocument> = {};
     if (request.status) searchQuery.active = request.status == 'active';
     if (request.search) {
@@ -66,15 +67,20 @@ export class UsersService {
     }
 
     const roleFilter: RootFilterQuery<UserDocument> = {};
-    if (
-      request.role &&
-      [UserRole.ADMIN, UserRole.MANAGER].includes(request.role)
-    )
-      throw new UnauthorizedException('You cannot request for this role');
 
-    roleFilter.role = request.role
-      ? request.role
-      : { $nin: [UserRole.ADMIN, UserRole.MANAGER] };
+    if (allowedRoles) {
+      roleFilter.role = { $in: allowedRoles };
+    } else {
+      if (
+        request.role &&
+        [UserRole.ADMIN, UserRole.MANAGER].includes(request.role)
+      )
+        throw new UnauthorizedException('You cannot request for this role');
+
+      roleFilter.role = request.role
+        ? request.role
+        : { $nin: [UserRole.ADMIN, UserRole.MANAGER] };
+    }
 
     const skip = (request.page - 1) * request.limit;
 
@@ -100,23 +106,35 @@ export class UsersService {
     };
   }
 
-  async registerUser(user: CreateUserDto): Promise<string> {
-    const { username, email, password } = user;
-
-    if (!username || !email || !email) {
-      throw new BadRequestException('Please provide all required fields');
-    }
-
-    const exists = await this.userModel.findOne({ email });
-
+  async create(
+    userData: Omit<User, '_id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<UserDocument> {
+    const exists = await this.userModel.findOne({ email: userData.email });
     if (exists) {
       throw new ConflictException('User already exists');
     }
 
-    const newUser = await this.userModel.create({
+    return await this.userModel.create(userData);
+  }
+
+  async findByRole(role: UserRole): Promise<UserDocument[]> {
+    return await this.userModel.find({ role });
+  }
+
+  async registerUser(user: CreateUserDto): Promise<string> {
+    const { username, email, password } = user;
+
+    if (!username || !email || !password) {
+      throw new BadRequestException('Please provide all required fields');
+    }
+
+    const newUser = await this.create({
       username,
       email,
-      passwordHash: password ? hashPassword(password) : null,
+      passwordHash: hashPassword(password),
+      role: UserRole.USER,
+      active: false,
+      verified: false,
     });
 
     const token = this.authService.signToken(mapUserToPublicInfo(newUser));
@@ -214,7 +232,7 @@ export class UsersService {
       code: randomBytes(32).toString('hex'),
     });
 
-    await sendPasswordResetMail(user.email, newRequest.code);
+    await this.mailerService.sendPasswordResetMail(user.email, newRequest.code);
   }
 
   async editUserInfo(user: UserDocument, userInfo: EditUserInfoDto) {

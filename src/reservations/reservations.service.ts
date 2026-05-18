@@ -105,7 +105,14 @@ export class ReservationsService {
   async getReservationsForUser(user: UserDocument): Promise<UserStats> {
     const result = await this.reservationsModel
       .find({ renter_id: user._id })
-      .populate<{ tool_id: PopulatedTool }>('tool_id');
+      .populate<{ tool_id: PopulatedTool }>({
+        path: 'tool_id',
+        populate: [
+          { path: 'owner_id' },
+          { path: 'categories' },
+          { path: 'location' },
+        ],
+      });
 
     const tools_rented = result.map((v) => {
       return {
@@ -144,6 +151,42 @@ export class ReservationsService {
         { $unwind: { path: '$tool_id', preserveNullAndEmptyArrays: true } },
         {
           $match: { 'tool_id.owner_id': user._id },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'tool_id.owner_id',
+            foreignField: '_id',
+            as: 'tool_id.owner_id',
+          },
+        },
+        {
+          $unwind: {
+            path: '$tool_id.owner_id',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'tools-categories',
+            localField: 'tool_id.categories',
+            foreignField: '_id',
+            as: 'tool_id.categories',
+          },
+        },
+        {
+          $lookup: {
+            from: 'warehouses',
+            localField: 'tool_id.location',
+            foreignField: '_id',
+            as: 'tool_id.location',
+          },
+        },
+        {
+          $unwind: {
+            path: '$tool_id.location',
+            preserveNullAndEmptyArrays: true,
+          },
         },
         {
           $lookup: {
@@ -191,6 +234,37 @@ export class ReservationsService {
         },
       },
       { $unwind: '$tool_id' },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'tool_id.owner_id',
+          foreignField: '_id',
+          as: 'tool_id.owner_id',
+        },
+      },
+      { $unwind: '$tool_id.owner_id' },
+      {
+        $lookup: {
+          from: 'tools-categories',
+          localField: 'tool_id.categories',
+          foreignField: '_id',
+          as: 'tool_id.categories',
+        },
+      },
+      {
+        $lookup: {
+          from: 'warehouses',
+          localField: 'tool_id.location',
+          foreignField: '_id',
+          as: 'tool_id.location',
+        },
+      },
+      {
+        $unwind: {
+          path: '$tool_id.location',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $lookup: {
           from: 'users',

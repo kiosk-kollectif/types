@@ -7,11 +7,11 @@ export type UserProfilDocument = UserProfil & Document;
 
 @Schema({ versionKey: false, _id: false })
 export class UserProfil {
-  @Prop({ required: true })
-  firstname!: string;
+  @Prop({ default: undefined })
+  firstname?: string;
 
-  @Prop({ required: true })
-  lastname!: string;
+  @Prop({ default: undefined })
+  lastname?: string;
 
   @Prop({ default: undefined })
   adress?: string;

@@ -15,6 +15,10 @@ import { ApplicantsModule } from './applicants/applicants.module';
 import { InvalidesTokenModule } from './invalides-token/invalides-token.module';
 import { InvalideTokenInterceptor } from 'src/invalides-token/invalides-token.interceptor';
 import { ReservationsModule } from './reservations/reservations.module';
+import { ManagersModule } from './managers/managers.module';
+import { TransformInterceptor } from './common/interceptor/transform.interceptor';
+import { MailerModule } from './mailer/mailer.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -30,11 +34,15 @@ import { ReservationsModule } from './reservations/reservations.module';
     ApplicantsModule,
     InvalidesTokenModule,
     ReservationsModule,
+    ManagersModule,
+    MailerModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     { provide: APP_INTERCEPTOR, useClass: InvalideTokenInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
   ],
 })
 export class AppModule {}

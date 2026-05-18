@@ -5,11 +5,11 @@ import { UserRole } from 'src/types';
 export class GetUsersQueryRequestDto {
   @IsNumber()
   @Transform(({ value }) => Number(value))
-  page: number;
+  page!: number;
 
   @IsNumber()
   @Transform(({ value }) => Number(value))
-  limit: number;
+  limit!: number;
 
   @IsOptional()
   @IsString()

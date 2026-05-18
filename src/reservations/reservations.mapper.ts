@@ -1,15 +1,21 @@
 import { Reservation } from './resevations.schema';
-import { Reservation as ReservationType, ReservationRequestStatus } from '../types';
+import {
+  Reservation as ReservationType,
+  ReservationRequestStatus,
+} from '../types';
 import { mapToolToPublicInfo, PopulatedTool } from '../tools/tools.mapper';
 import { mapUserToInfo } from '../users/users.mapper';
 import { User } from '../users/users.schema';
 
-export interface PopulatedReservation extends Omit<Reservation, 'tool_id' | 'renter_id'> {
+export interface PopulatedReservation
+  extends Omit<Reservation, 'tool_id' | 'renter_id'> {
   tool_id: PopulatedTool;
   renter_id: User;
 }
 
-export const mapReservationToType = (doc: PopulatedReservation): ReservationType => {
+export const mapReservationToType = (
+  doc: PopulatedReservation,
+): ReservationType => {
   return {
     id: doc._id.toString(),
     tool: mapToolToPublicInfo(doc.tool_id),

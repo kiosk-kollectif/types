@@ -16,10 +16,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { GlobalEditCategoryDto } from './dto/global-edit-category.dto';
 import { ToolsCategoriesService } from './tools-categories.service';
 import { PermissionLevel } from 'src/common/decorator/permission-level.decorator';
 import { CategorieNotFoundResponse } from './tools-categories.decorator';
 import { UserRole } from 'src/types';
+import { ResponseMessage } from 'src/common/decorator/response-message.decorator';
 
 @ApiTags('Gerer les categories des outils')
 @Controller('tools-categories')
@@ -27,6 +29,16 @@ export class ToolsCategoriesController {
   constructor(
     private readonly toolsCategoriesService: ToolsCategoriesService,
   ) {}
+
+  @PermissionLevel([UserRole.ADMIN])
+  @Post('/global-edit')
+  @ResponseMessage('Catégories mises à jour')
+  @ApiOperation({
+    summary: 'Mise à jour globale des catégories (ajout/suppression/édition)',
+  })
+  async batchUpdateCategories(@Body() dto: GlobalEditCategoryDto) {
+    return await this.toolsCategoriesService.batchUpdateCategories(dto);
+  }
 
   @PermissionLevel([UserRole.ADMIN])
   @Post('/')

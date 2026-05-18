@@ -11,10 +11,10 @@ import {
   VerificationCodeDocument,
 } from './verification-codes.schema';
 import { Model, Types } from 'mongoose';
-import { sendAccountConfirmationMail } from 'src/common/utils/mailers';
 import { UserDocument } from 'src/users/users.schema';
 import { AuthService } from 'src/auth/auth.service';
 import { mapUserToPublicInfo } from 'src/users/users.mapper';
+import { MailerService } from 'src/mailer/mailer.service';
 
 @Injectable()
 export class VerificationCodesService {
@@ -22,6 +22,7 @@ export class VerificationCodesService {
     @InjectModel(VerificationCode.name)
     private readonly verificationCodeModel: Model<VerificationCodeDocument>,
     private readonly jwtService: AuthService,
+    private readonly mailerService: MailerService,
   ) {}
 
   private async getLastVerificationCode(userId: string | Types.ObjectId) {
@@ -48,7 +49,10 @@ export class VerificationCodesService {
       code: Math.floor(100000 + Math.random() * 900000),
     });
 
-    await sendAccountConfirmationMail(user.email, verificationCode.code);
+    await this.mailerService.sendAccountConfirmationMail(
+      user.email,
+      verificationCode.code,
+    );
   }
 
   async confirmVerificationCode(user: UserDocument, code: number) {
