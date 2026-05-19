@@ -2,10 +2,11 @@ import { ToolPublicInfo } from './tools';
 import { User } from './users';
 
 export enum ReservationRequestStatus {
-  PENDING = 'en cours',
-  ACCEPTED = 'acceptee',
-  COMPLETED = 'terminee',
-  CANCELLED = 'annulee',
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  PICKED_UP = 'picked_up',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
 }
 
 export interface Reservation {
