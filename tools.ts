@@ -21,7 +21,6 @@ export type ToolPublicInfo = {
 };
 
 export type Tool = Omit<ToolPublicInfo, 'categories'> & {
-  status: ToolRequestStatus;
   price: number;
   categories: { name: string; id: string }[];
   createdAt: string;
