@@ -1,15 +1,15 @@
-import { Tool as ToolInfo } from './tools';
-import { User } from './users';
+import { ToolRequestInfo } from './tools';
+import { UserPublicInfo } from './users';
 
 export type PendingRequest =
   | {
       type: 'applicant_request';
       request_id: string;
-      user: User;
+      user: UserPublicInfo;
       createdAt: string;
     }
   | {
       type: 'tool_request';
-      tool: ToolInfo;
+      tool: ToolRequestInfo;
       createdAt: string;
     };
