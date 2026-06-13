@@ -1,11 +1,13 @@
 import { ToolRequestInfo } from './tools';
-import { UserPublicInfo } from './users';
+import { User } from './users';
+import { DashboardKPIs, MonthlyRevenueStats } from './dashboard';
+import { PaginatedResult } from '../common/types/pagination.types';
 
 export type PendingRequest =
   | {
       type: 'applicant_request';
       request_id: string;
-      user: UserPublicInfo;
+      user: User;
       createdAt: string;
     }
   | {
@@ -13,3 +15,19 @@ export type PendingRequest =
       tool: ToolRequestInfo;
       createdAt: string;
     };
+
+export interface RecentActivityItem {
+  id: string;
+  user: User;
+  action: string;
+  entityType: string;
+  note: string | null;
+  time: string;
+}
+
+export interface AdminAnalytics {
+  kpis: DashboardKPIs;
+  monthlyRevenue: MonthlyRevenueStats[];
+  recentActivity: RecentActivityItem[];
+  reviewQueue: PaginatedResult<PendingRequest>;
+}

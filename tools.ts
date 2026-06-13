@@ -1,4 +1,4 @@
-import { type UserPublicInfo } from './users';
+import { type UserPublicInfo, type User } from './users';
 
 export enum ToolRequestStatus {
   PENDING = 'pending',
@@ -29,7 +29,7 @@ export type ToolRequestInfo = {
   price: number | null;
   status: ToolRequestStatus;
   adminNote: string | null;
-  owner: UserPublicInfo;
+  owner: User;
   createdAt: string;
 };
 
