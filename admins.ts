@@ -1,7 +1,7 @@
 import { ToolRequestInfo } from './tools';
 import { User } from './users';
 import { DashboardKPIs, MonthlyRevenueStats } from './dashboard';
-import { PaginatedResult } from '../common/types/pagination.types';
+import { PaginatedResult } from './pagination.types';
 
 export type PendingRequest =
   | {
