@@ -31,3 +31,11 @@ export interface AdminAnalytics {
   recentActivity: RecentActivityItem[];
   reviewQueue: PaginatedResult<PendingRequest>;
 }
+
+export interface UserActivityLog {
+  id: string;
+  action: string;
+  entityType: string;
+  note: string | null;
+  time: string;
+}
