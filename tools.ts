@@ -4,6 +4,7 @@ export enum ToolRequestStatus {
   PENDING = 'pending',
   ACCEPTED = 'accepted',
   REJECTED = 'rejected',
+  DEPOSED = 'deposited',
 }
 
 export type ToolPublicInfo = {
