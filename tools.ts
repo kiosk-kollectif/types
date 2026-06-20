@@ -34,7 +34,8 @@ export type ToolRequestInfo = {
   createdAt: string;
 };
 
-export type Tool = Omit<ToolPublicInfo, 'categories'> & {
+export type Tool = Omit<ToolPublicInfo, 'categories' | 'owner'> & {
+  owner: User;
   price: number;
   categories: { name: string; id: string }[];
   createdAt: string;
