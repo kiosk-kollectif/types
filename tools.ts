@@ -18,6 +18,9 @@ export type ToolPublicInfo = {
   location?: string;
   slug: string;
   owner: UserPublicInfo;
+};
+
+export type ToolWithReservations = ToolPublicInfo & {
   reservations: string[][];
 };
 

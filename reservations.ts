@@ -1,4 +1,4 @@
-import { ToolPublicInfo } from './tools';
+import { Tool } from './tools';
 import { User } from './users';
 
 export enum ReservationRequestStatus {
@@ -11,7 +11,7 @@ export enum ReservationRequestStatus {
 
 export interface Reservation {
   id: string;
-  tool: ToolPublicInfo;
+  tool: Tool;
   renter: User;
   start_date: string;
   end_date: string;
