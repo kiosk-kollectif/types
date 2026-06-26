@@ -8,3 +8,4 @@ export * from './reservations';
 export * from './tools';
 export * from './users';
 export * from './warehouse';
+export * from './stats';
