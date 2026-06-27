@@ -8,10 +8,6 @@ export interface WhareHouseManager {
   user: User;
 }
 
-export interface WhareHouse extends WhareHousePublicInfo {
-  managers?: WhareHouseManager[];
-}
-
 export interface WhareHousePublicInfo {
   id: string;
   name: string;
@@ -19,4 +15,14 @@ export interface WhareHousePublicInfo {
   latitude: number;
   longitude: number;
   toolsCount?: number;
+}
+
+export interface WhareHouse extends WhareHousePublicInfo {
+  managers?: WhareHouseManager[];
+}
+
+export interface WhareHouseDetails extends WhareHouse {
+  activeRentalsCount: number;
+  utilizationRate: number;
+  totalRevenue: number;
 }
