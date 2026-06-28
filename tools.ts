@@ -21,7 +21,7 @@ export type ToolPublicInfo = {
   isCurrentlyAvailable?: boolean;
 };
 
-export type ToolWithReservations = ToolPublicInfo & {
+export type ToolPublicInfoWithReservations = ToolPublicInfo & {
   reservations: string[][];
 };
 
