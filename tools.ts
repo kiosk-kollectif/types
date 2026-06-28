@@ -18,6 +18,7 @@ export type ToolPublicInfo = {
   location?: string;
   slug: string;
   owner: UserPublicInfo;
+  isCurrentlyAvailable?: boolean;
 };
 
 export type ToolWithReservations = ToolPublicInfo & {
