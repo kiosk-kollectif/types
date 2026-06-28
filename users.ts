@@ -1,3 +1,4 @@
+import { Reservation } from './reservations';
 import { ToolPublicInfo } from './tools';
 
 export type UserPublicInfo = {
@@ -34,6 +35,12 @@ export type User = Omit<UserPublicInfo, 'profil'> & {
 };
 
 export type UserStats = {
-  rentalsTools: { tools?: ToolPublicInfo[]; length: number };
-  total_rentedd_tools: { tools?: ToolPublicInfo[]; length: number };
+  totalRentCount: number;
+  currentRentCount: number;
+  currentRentals: (Omit<Reservation, 'tool' | 'renter'> & {
+    tool: ToolPublicInfo;
+  })[];
+  lastEndedRentals: (Omit<Reservation, 'tool' | 'renter'> & {
+    tool: ToolPublicInfo;
+  })[];
 };
