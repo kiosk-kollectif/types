@@ -1,3 +1,6 @@
+import { ApiGlobalResponse } from './ApiGlobalResponse';
+import { PaginatedResult } from './pagination.types';
+import { Reservation } from './reservations';
 import { User } from './users';
 
 export enum ApplicantRequestStatus {
@@ -15,3 +18,18 @@ export interface ApplicantRequest {
   createdAt: string;
   updatedAt: string;
 }
+
+export type GetAppplicantToolRentalResponse = PaginatedResult<
+  Reservation & {
+    days: number;
+    earnings: number;
+  }
+> & {
+  stats: {
+    totalEarnings: number;
+    totalRentedTools: number;
+    uniqueRentedTools: number;
+    totalOwnedTools: number;
+    rentalRatio: number;
+  };
+};
